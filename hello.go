@@ -11,24 +11,24 @@ import (
 var fsys embed.FS
 
 var (
-	x    = 50.0
-	y    = 120.0
+	x    = 20.0
+	y    = 30.0
 	vy   = 0.0  // Velocity of y (速度のy成分) の略
-	g    = 0.1  // Gravity (重力加速度) の略
-	jump = -2.0 // ジャンプ力
+	g    = 0.05 // Gravity (重力加速度) の略
+	jump = -1.0 // ジャンプ力
 
 	frames     = 0       // 経過フレーム数
 	interval   = 120     // 壁の追加間隔
-	wallStartX = 640     // 壁の初期X座標
+	wallStartX = 200     // 壁の初期X座標
 	wallXs     = []int{} // 壁のX座標
-	wallWidth  = 20      // 壁の幅
-	wallHeight = 360     // 壁の高さ
+	wallWidth  = 7       // 壁の幅
+	wallHeight = 128     // 壁の高さ
 	holeYs     = []int{} // 穴のY座標
-	holeYMax   = 150     // 穴のY座標の最大値
-	holeHeight = 150     // 穴のサイズ（高さ）
+	holeYMax   = 48      // 穴のY座標の最大値
+	holeHeight = 40      // 穴のサイズ（高さ）
 
-	gopherWidth  = 60
-	gopherHeight = 75
+	gopherWidth  = 20
+	gopherHeight = 25
 
 	scene = "title"
 	score = 0
@@ -38,7 +38,7 @@ var (
 )
 
 func main() {
-	miniten.SetWindowSize(320, 240)
+	miniten.SetWindowSize(128, 64)
 	miniten.Run(draw)
 }
 
@@ -93,7 +93,7 @@ func drawGame() {
 	// 壁追加処理ここまで
 
 	for i := range wallXs {
-		wallXs[i] -= 2 // 少しずつ左へ
+		wallXs[i] -= 1 // 少しずつ左へ
 	}
 	for i := range wallXs {
 		// 上の壁の描画
@@ -168,8 +168,8 @@ func drawGameover() {
 	if isJustClicked {
 		scene = "title"
 
-		x = 50.0
-		y = 120.0
+		x = 20.0
+		y = 30.0
 		vy = 0.0
 		frames = 0
 		wallXs = []int{}
