@@ -59,23 +59,32 @@ func draw() {
 }
 
 func drawTitle() {
-	miniten.DrawImageFS(fsys, "sky.png", 0, 0)
-	miniten.Println("クリックしてスタート")
+	//miniten.DrawImageFS(fsys, "sky.png", 0, 0)
+	miniten.Println("click to start")
 	miniten.DrawImageFS(fsys, "gopher.png", int(x), int(y))
+
+	//miniten.DrawRect(0, 20, 20, 20) // 左上座標、幅、高さ
+	//miniten.DrawCircle(80, 32, 30)  // 中心座標、半径
 	if isJustClicked {
 		scene = "game"
 	}
 }
 
 func drawGame() {
-	miniten.DrawImageFS(fsys, "sky.png", 0, 0)
+	//miniten.DrawImageFS(fsys, "sky.png", 0, 0)
 	for i, wallX := range wallXs {
 		if wallX < int(x) {
 			score = i + 1
 		}
 	}
+	//miniten.DrawRect(10, 30, 20, 20) // 左上座標、幅、高さ
+	//miniten.DrawCircle(80, 32, 20)   // 中心座標、半径
 
 	miniten.Println("Score", score)
+
+	//if isJustClicked {
+	//	scene = "title"
+	//}
 
 	if miniten.IsClicked() {
 		vy = jump
@@ -149,7 +158,7 @@ func drawGame() {
 
 func drawGameover() {
 	// 背景、gopher、壁の描画はdrawGame関数のコピペ
-	miniten.DrawImageFS(fsys, "sky.png", 0, 0)
+	//miniten.DrawImageFS(fsys, "sky.png", 0, 0)
 	miniten.DrawImageFS(fsys, "gopher.png", int(x), int(y))
 
 	for i := range wallXs {
