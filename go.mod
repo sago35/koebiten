@@ -21,4 +21,4 @@ require (
 	tinygo.org/x/tinyfont v0.4.0 // indirect
 )
 
-replace github.com/eihigh/miniten => .
+//replace github.com/eihigh/miniten => .
