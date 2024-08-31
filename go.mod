@@ -1,4 +1,4 @@
-module github.com/sago35/miniten-examples
+module github.com/sago35/koebiten
 
 go 1.22.5
 
@@ -21,4 +21,4 @@ require (
 	tinygo.org/x/tinyfont v0.4.0 // indirect
 )
 
-//replace github.com/eihigh/miniten => ./koebiten
+replace github.com/eihigh/miniten => .
