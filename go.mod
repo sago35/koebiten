@@ -1,8 +1,8 @@
-module hello
+module github.com/sago35/miniten-examples
 
 go 1.22.5
 
-require github.com/eihigh/miniten v0.0.0-20240815080428-48d188c12931
+require github.com/eihigh/miniten v0.0.0-20240815131645-0a984052610a
 
 require (
 	github.com/ebitengine/gomobile v0.0.0-20240518074828-e86332849895 // indirect

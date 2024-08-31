@@ -4,7 +4,8 @@ import (
 	"embed"
 	"math/rand/v2"
 
-	"github.com/eihigh/miniten"
+	miniten "github.com/eihigh/miniten"
+	//miniten "github.com/sago35/miniten-examples/koebiten"
 )
 
 //go:embed *.png

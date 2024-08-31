@@ -1,4 +1,4 @@
-package miniten
+package koebiten
 
 import (
 	"fmt"
