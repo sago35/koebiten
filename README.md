@@ -11,7 +11,7 @@ koebiten is a miniten clone that runs on TinyGo.
 ![](./images/flappygopher.jpg)
 
 When running with TinyGo, please enable the following in go.mod and build.  
-For now, koebiten only works on zero-kb02. It needs some improvements to run in a more general environment.  
+For now, koebiten only works on [zero-kb02](https://github.com/sago35/keyboards). It needs some improvements to run in a more general environment.  
 
 ```
 replace github.com/eihigh/miniten => .
@@ -31,3 +31,7 @@ The same source code mentioned above can be run on miniten and on a computer.
 $ go run ./games/flappygopher
 ```
 
+## link
+
+* https://github.com/eihigh/miniten
+* https://github.com/sago35/keyboards
