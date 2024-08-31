@@ -113,9 +113,6 @@ var (
 )
 
 func DrawImageFS(fsys fs.FS, path string, x, y int) {
-	if path == "sky.png" {
-		return
-	}
 	img, ok := pngBuffer[path]
 	if !ok {
 		p, err := fsys.Open(path)
@@ -123,15 +120,13 @@ func DrawImageFS(fsys fs.FS, path string, x, y int) {
 			return
 		}
 
-		switch path {
-		case "gopher.png":
-			img.Buf = make([]bool, 20*25)
-		case "wall.png":
-			img.Buf = make([]bool, 7*128)
-		}
 		png.SetCallback(buffer[:], func(data []uint16, x, y, w, h, width, height int16) {
 			img.W = width
 			img.H = height
+
+			if img.Buf == nil || len(img.Buf) == 0 {
+				img.Buf = make([]bool, width*height)
+			}
 
 			for yy := int16(0); yy < h; yy++ {
 				for xx := int16(0); xx < w; xx++ {
