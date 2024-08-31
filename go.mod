@@ -20,3 +20,5 @@ require (
 	tinygo.org/x/tinydraw v0.4.0 // indirect
 	tinygo.org/x/tinyfont v0.4.0 // indirect
 )
+
+//replace github.com/eihigh/miniten => ./koebiten
