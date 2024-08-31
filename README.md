@@ -1,4 +1,4 @@
-# miniten-examples
+# koebiten
 
 koebiten is a miniten clone that runs on TinyGo.
 
