@@ -110,11 +110,7 @@ func drawGame() {
 		walls[i].wallX -= 1 // 少しずつ左へ
 	}
 	for _, wall := range walls {
-		// 上の壁の描画
-		miniten.DrawImageFS(fsys, "wall.png", wall.wallX, wall.holeY-wallHeight)
-
-		// 下の壁の描画
-		miniten.DrawImageFS(fsys, "wall.png", wall.wallX, wall.holeY+holeHeight)
+		drawWalls(wall)
 
 		// gopherくんを表す四角形を作る
 		aLeft := int(x)
@@ -129,10 +125,7 @@ func drawGame() {
 		bBottom := wall.holeY
 
 		// 上の壁との当たり判定
-		if aLeft < bRight &&
-			bLeft < aRight &&
-			aTop < bBottom &&
-			bTop < aBottom {
+		if hitTestRects(aLeft, aTop, aRight, aBottom, bLeft, bTop, bRight, bBottom) {
 			scene = "gameover"
 		}
 
@@ -143,17 +136,14 @@ func drawGame() {
 		bBottom = wall.holeY + holeHeight + wallHeight
 
 		// 下の壁との当たり判定
-		if aLeft < bRight &&
-			bLeft < aRight &&
-			aTop < bBottom &&
-			bTop < aBottom {
+		if hitTestRects(aLeft, aTop, aRight, aBottom, bLeft, bTop, bRight, bBottom) {
 			scene = "gameover"
 		}
 
 		if y < 0 {
 			scene = "gameover"
 		}
-		if 240 < y {
+		if 64 < y {
 			scene = "gameover"
 		}
 	}
@@ -165,11 +155,7 @@ func drawGameover() {
 	miniten.DrawImageFS(fsys, "gopher.png", int(x), int(y))
 
 	for _, wall := range walls {
-		// 上の壁の描画
-		miniten.DrawImageFS(fsys, "wall.png", wall.wallX, wall.holeY-wallHeight)
-
-		// 下の壁の描画
-		miniten.DrawImageFS(fsys, "wall.png", wall.wallX, wall.holeY+holeHeight)
+		drawWalls(wall)
 	}
 
 	miniten.Println("Game Over")
@@ -185,4 +171,19 @@ func drawGameover() {
 		walls = []wall{}
 		score = 0
 	}
+}
+
+func drawWalls(w wall) {
+	// 上の壁の描画
+	miniten.DrawImageFS(fsys, "wall.png", w.wallX, w.holeY-wallHeight)
+
+	// 下の壁の描画
+	miniten.DrawImageFS(fsys, "wall.png", w.wallX, w.holeY+holeHeight)
+}
+
+func hitTestRects(aLeft, aTop, aRight, aBottom, bLeft, bTop, bRight, bBottom int) bool {
+	return aLeft < bRight &&
+		bLeft < aRight &&
+		aTop < bBottom &&
+		bTop < aBottom
 }
