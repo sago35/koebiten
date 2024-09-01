@@ -36,7 +36,7 @@ func init() {
 
 	i2c = machine.I2C0
 	i2c.Configure(machine.I2CConfig{
-		Frequency: machine.TWI_FREQ_400KHZ,
+		Frequency: 2_800_000,
 		SDA:       machine.GPIO12,
 		SCL:       machine.GPIO13,
 	})
@@ -54,7 +54,7 @@ func init() {
 }
 
 func Run(d func()) error {
-	tick := time.Tick(50 * time.Millisecond)
+	tick := time.Tick(32 * time.Millisecond)
 	for {
 		<-tick
 		textY = 0
