@@ -23,14 +23,14 @@ var (
 	g    = 0.05 // Gravity (重力加速度) の略
 	jump = -1.0 // ジャンプ力
 
-	frames     = 0        // 経過フレーム数
-	interval   = 120      // 壁の追加間隔
-	wallStartX = 200      // 壁の初期X座標
-	walls      = []wall{} // 壁のX座標とY座標
-	wallWidth  = 7        // 壁の幅
-	wallHeight = 128      // 壁の高さ
-	holeYMax   = 48       // 穴のY座標の最大値
-	holeHeight = 40       // 穴のサイズ（高さ）
+	frames     = 0         // 経過フレーム数
+	interval   = 120       // 壁の追加間隔
+	wallStartX = 200       // 壁の初期X座標
+	walls      = []*wall{} // 壁のX座標とY座標
+	wallWidth  = 7         // 壁の幅
+	wallHeight = 128       // 壁の高さ
+	holeYMax   = 48        // 穴のY座標の最大値
+	holeHeight = 40        // 穴のサイズ（高さ）
 
 	gopherWidth  = 20
 	gopherHeight = 25
@@ -101,13 +101,13 @@ func drawGame() {
 	// 壁追加処理ここから
 	frames += 1
 	if frames%interval == 0 {
-		wall := wall{wallStartX, rand.N(holeYMax)}
+		wall := &wall{wallStartX, rand.N(holeYMax)}
 		walls = append(walls, wall)
 	}
 	// 壁追加処理ここまで
 
-	for i := range walls {
-		walls[i].wallX -= 1 // 少しずつ左へ
+	for _, wall := range walls {
+		wall.wallX -= 1 // 少しずつ左へ
 	}
 	for _, wall := range walls {
 		drawWalls(wall)
@@ -168,12 +168,12 @@ func drawGameover() {
 		y = 30.0
 		vy = 0.0
 		frames = 0
-		walls = []wall{}
+		walls = []*wall{}
 		score = 0
 	}
 }
 
-func drawWalls(w wall) {
+func drawWalls(w *wall) {
 	// 上の壁の描画
 	miniten.DrawImageFS(fsys, "wall.png", w.wallX, w.holeY-wallHeight)
 
