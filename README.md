@@ -10,7 +10,7 @@ koebiten is a miniten clone that runs on TinyGo.
 
 ![](./images/flappygopher.jpg)
 
-For now, koebiten only works on [zero-kb02](https://github.com/sago35/keyboards). It needs some improvements to run in a more general environment.  
+For now, koebiten only works on [zero-kb02](https://github.com/sago35/keyboards) and [macropad-rp2040](https://learn.adafruit.com/adafruit-macropad-rp2040). It needs some improvements to run in a more general environment.  
 
 ```
 $ tinygo flash --target waveshare-rp2040-zero --size short ./games/flappygopher
