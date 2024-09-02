@@ -12,16 +12,22 @@ import (
 
 	"tinygo.org/x/drivers"
 	"tinygo.org/x/drivers/image/png"
-	"tinygo.org/x/drivers/ssd1306"
 	"tinygo.org/x/tinydraw"
 	"tinygo.org/x/tinyfont"
 )
 
+type Displayer interface {
+	drivers.Displayer
+	ClearDisplay()
+	ClearBuffer()
+}
+
 var (
 	btn     machine.Pin
-	i2c     *machine.I2C
-	display ssd1306.Device
+	display Displayer
+)
 
+var (
 	textY int16
 )
 
@@ -31,25 +37,6 @@ var (
 )
 
 func init() {
-	btn = machine.GPIO2
-	btn.Configure(machine.PinConfig{Mode: machine.PinInputPullup})
-
-	i2c = machine.I2C0
-	i2c.Configure(machine.I2CConfig{
-		Frequency: 2_800_000,
-		SDA:       machine.GPIO12,
-		SCL:       machine.GPIO13,
-	})
-
-	display = ssd1306.NewI2C(i2c)
-	display.Configure(ssd1306.Config{
-		Address: 0x3C,
-		Width:   128,
-		Height:  64,
-	})
-	display.SetRotation(drivers.Rotation180)
-	display.ClearDisplay()
-
 	pngBuffer = map[string]Image{}
 }
 
@@ -64,8 +51,6 @@ func Run(d func()) error {
 	}
 	return nil
 }
-
-type app struct{}
 
 func SetWindowSize(w, h int) {
 }
@@ -92,15 +77,15 @@ func Println(args ...any) {
 	}
 
 	textY += 8
-	tinyfont.WriteLine(&display, &tinyfont.Org01, 2, textY, strings.Join(str, " "), white)
+	tinyfont.WriteLine(display, &tinyfont.Org01, 2, textY, strings.Join(str, " "), white)
 }
 
 func DrawRect(x, y, w, h int) {
-	tinydraw.Rectangle(&display, int16(x), int16(y), int16(w), int16(h), white)
+	tinydraw.Rectangle(display, int16(x), int16(y), int16(w), int16(h), white)
 }
 
 func DrawCircle(x, y, r int) {
-	tinydraw.Circle(&display, int16(x), int16(y), int16(r), white)
+	tinydraw.Circle(display, int16(x), int16(y), int16(r), white)
 }
 
 type Image struct {
