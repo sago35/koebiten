@@ -37,9 +37,6 @@ var (
 
 	scene = "title"
 	score = 0
-
-	isPrevClicked = false // 前のフレームでクリックされていたか
-	isJustClicked = false // 今のフレームでクリックされたか
 )
 
 func main() {
@@ -48,11 +45,6 @@ func main() {
 }
 
 func draw() {
-	// 今のフレームでクリックされたか = 今のフレームでクリックされていて、前のフレームでクリックされていない
-	isJustClicked = miniten.IsClicked() && !isPrevClicked
-	// 次のフレームに備えて、クリックされたかを保存しておく
-	isPrevClicked = miniten.IsClicked()
-
 	switch scene {
 	case "title":
 		drawTitle()
@@ -70,7 +62,7 @@ func drawTitle() {
 
 	//miniten.DrawRect(0, 20, 20, 20) // 左上座標、幅、高さ
 	//miniten.DrawCircle(80, 32, 30)  // 中心座標、半径
-	if isJustClicked {
+	if isAnyKeyJustPressed() {
 		scene = "game"
 	}
 }
@@ -87,11 +79,7 @@ func drawGame() {
 
 	miniten.Println("Score", score)
 
-	//if isJustClicked {
-	//	scene = "title"
-	//}
-
-	if miniten.IsClicked() {
+	if isAnyKeyJustPressed() {
 		vy = jump
 	}
 	vy += g // 速度に加速度を足す
@@ -161,7 +149,7 @@ func drawGameover() {
 	miniten.Println("Game Over")
 	miniten.Println("Score", score)
 
-	if isJustClicked {
+	if isAnyKeyJustPressed() {
 		scene = "title"
 
 		x = 20.0
@@ -186,4 +174,8 @@ func hitTestRects(aLeft, aTop, aRight, aBottom, bLeft, bTop, bRight, bBottom int
 		bLeft < aRight &&
 		aTop < bBottom &&
 		bTop < aBottom
+}
+
+func isAnyKeyJustPressed() bool {
+	return len(miniten.AppendJustPressedKeys(nil)) > 0
 }
