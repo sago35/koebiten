@@ -22,7 +22,7 @@ var (
 )
 
 const (
-	debounce = 2
+	debounce = 0
 )
 
 type State uint8
