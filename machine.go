@@ -11,14 +11,15 @@ import (
 )
 
 var (
-	colPins  []machine.Pin
-	rowPins  []machine.Pin
-	gpioPins []machine.Pin
-	enc      *encoders.QuadratureDevice
-	encOld   int
-	state    []State
-	cycle    []int
-	duration []int
+	colPins          []machine.Pin
+	rowPins          []machine.Pin
+	gpioPins         []machine.Pin
+	enc              *encoders.QuadratureDevice
+	encOld           int
+	state            []State
+	cycle            []int
+	duration         []int
+	invertRotaryPins = false
 )
 
 const (
@@ -90,10 +91,18 @@ func init() {
 		c.Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
 	}
 
-	enc = encoders.NewQuadratureViaInterrupt(
+	rotaryPins := []machine.Pin{
 		machine.GPIO3,
 		machine.GPIO4,
-	)
+	}
+
+	if invertRotaryPins {
+		rotaryPins = []machine.Pin{
+			machine.GPIO4,
+			machine.GPIO3,
+		}
+	}
+	enc = encoders.NewQuadratureViaInterrupt(rotaryPins[0], rotaryPins[1])
 
 	enc.Configure(encoders.QuadratureConfig{
 		Precision: 4,
