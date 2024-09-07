@@ -12,6 +12,7 @@ import (
 
 	"tinygo.org/x/drivers"
 	"tinygo.org/x/drivers/image/png"
+	"tinygo.org/x/drivers/pixel"
 	"tinygo.org/x/tinydraw"
 	"tinygo.org/x/tinyfont"
 )
@@ -37,7 +38,7 @@ var (
 )
 
 func init() {
-	pngBuffer = map[string]Image{}
+	pngBuffer = map[string]pixel.Image[pixel.Monochrome]{}
 }
 
 func Run(d func()) error {
@@ -93,15 +94,9 @@ func DrawCircle(x, y, r int) {
 	tinydraw.Circle(display, int16(x), int16(y), int16(r), white)
 }
 
-type Image struct {
-	W   int16
-	H   int16
-	Buf []bool
-}
-
 var (
 	buffer    [3 * 8 * 8 * 4]uint16
-	pngBuffer map[string]Image
+	pngBuffer map[string]pixel.Image[pixel.Monochrome]
 )
 
 func DrawImageFS(fsys fs.FS, path string, x, y int) {
@@ -113,11 +108,8 @@ func DrawImageFS(fsys fs.FS, path string, x, y int) {
 		}
 
 		png.SetCallback(buffer[:], func(data []uint16, x, y, w, h, width, height int16) {
-			img.W = width
-			img.H = height
-
-			if img.Buf == nil || len(img.Buf) == 0 {
-				img.Buf = make([]bool, width*height)
+			if img.Len() == 0 {
+				img = pixel.NewImage[pixel.Monochrome](int(width), int(height))
 			}
 
 			for yy := int16(0); yy < h; yy++ {
@@ -134,7 +126,7 @@ func DrawImageFS(fsys fs.FS, path string, x, y int) {
 						cnt++
 					}
 					if cnt >= 2 {
-						img.Buf[y*width+x+yy*w+xx] = true
+						img.Set(int(x+xx), int(y+yy), true)
 					}
 				}
 			}
@@ -147,10 +139,11 @@ func DrawImageFS(fsys fs.FS, path string, x, y int) {
 		pngBuffer[path] = img
 	}
 
-	for yy := int16(0); yy < img.H; yy++ {
-		for xx := int16(0); xx < img.W; xx++ {
-			if img.Buf[yy*img.W+xx] {
-				display.SetPixel(int16(x)+xx, int16(y)+yy, white)
+	w, h := img.Size()
+	for yy := 0; yy < h; yy++ {
+		for xx := 0; xx < w; xx++ {
+			if img.Get(xx, yy) == true {
+				display.SetPixel(int16(x)+int16(xx), int16(y)+int16(yy), white)
 			}
 		}
 	}
