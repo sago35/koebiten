@@ -44,6 +44,7 @@ func Run(d func()) error {
 	tick := time.Tick(32 * time.Millisecond)
 	for {
 		<-tick
+		keyUpdate()
 		textY = 0
 		display.ClearBuffer()
 		d()
