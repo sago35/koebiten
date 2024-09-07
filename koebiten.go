@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image/color"
 	"io/fs"
-	"machine"
 	"strings"
 	"time"
 
@@ -25,7 +24,6 @@ type Displayer interface {
 }
 
 var (
-	btn     machine.Pin
 	display Displayer
 
 	textY int16
@@ -56,10 +54,6 @@ func Run(d func()) error {
 
 // SetWindowSize sets the size of the display window.
 func SetWindowSize(w, h int) {
-}
-
-func IsClicked() bool {
-	return !btn.Get()
 }
 
 // Println prints formatted output to the display.

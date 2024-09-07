@@ -36,9 +36,6 @@ const (
 )
 
 func init() {
-	btn = machine.GPIO2
-	btn.Configure(machine.PinConfig{Mode: machine.PinInputPullup})
-
 	i2c := machine.I2C0
 	i2c.Configure(machine.I2CConfig{
 		Frequency: 2_800_000,

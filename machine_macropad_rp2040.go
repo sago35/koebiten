@@ -9,9 +9,6 @@ import (
 )
 
 func init() {
-	btn = machine.KEY1
-	btn.Configure(machine.PinConfig{Mode: machine.PinInputPullup})
-
 	machine.SPI1.Configure(machine.SPIConfig{
 		Frequency: 48000000,
 	})
