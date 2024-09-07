@@ -4,8 +4,8 @@ import (
 	"embed"
 	"math/rand/v2"
 
-	//"github.com/eihigh/miniten"
-	miniten "github.com/sago35/koebiten"
+	"github.com/sago35/koebiten"
+	"tinygo.org/x/drivers/pixel"
 )
 
 //go:embed *.png
@@ -39,9 +39,14 @@ var (
 	score = 0
 )
 
+var (
+	white = pixel.NewMonochrome(0xFF, 0xFF, 0xFF)
+	black = pixel.NewMonochrome(0x00, 0x00, 0x00)
+)
+
 func main() {
-	miniten.SetWindowSize(128, 64)
-	miniten.Run(draw)
+	koebiten.SetWindowSize(128, 64)
+	koebiten.Run(draw)
 }
 
 func draw() {
@@ -56,35 +61,30 @@ func draw() {
 }
 
 func drawTitle() {
-	miniten.DrawImageFS(fsys, "sky.png", 0, 0)
-	miniten.Println("click to start")
-	miniten.DrawImageFS(fsys, "gopher.png", int(x), int(y))
+	koebiten.DrawImageFS(nil, fsys, "sky.png", 0, 0)
+	koebiten.Println("click to start")
+	koebiten.DrawImageFS(nil, fsys, "gopher.png", int(x), int(y))
 
-	//miniten.DrawRect(0, 20, 20, 20) // 左上座標、幅、高さ
-	//miniten.DrawCircle(80, 32, 30)  // 中心座標、半径
 	if isAnyKeyJustPressed() {
 		scene = "game"
 	}
 }
 
 func drawGame() {
-	miniten.DrawImageFS(fsys, "sky.png", 0, 0)
+	koebiten.DrawImageFS(nil, fsys, "sky.png", 0, 0)
 	for i, wall := range walls {
 		if wall.wallX < int(x) {
 			score = i + 1
 		}
 	}
-	//miniten.DrawRect(10, 30, 20, 20) // 左上座標、幅、高さ
-	//miniten.DrawCircle(80, 32, 20)   // 中心座標、半径
-
-	miniten.Println("Score", score)
+	koebiten.Println("Score", score)
 
 	if isAnyKeyJustPressed() {
 		vy = jump
 	}
 	vy += g // 速度に加速度を足す
 	y += vy // 位置に速度を足す
-	miniten.DrawImageFS(fsys, "gopher.png", int(x), int(y))
+	koebiten.DrawImageFS(nil, fsys, "gopher.png", int(x), int(y))
 
 	// 壁追加処理ここから
 	frames += 1
@@ -139,15 +139,15 @@ func drawGame() {
 
 func drawGameover() {
 	// 背景、gopher、壁の描画はdrawGame関数のコピペ
-	miniten.DrawImageFS(fsys, "sky.png", 0, 0)
-	miniten.DrawImageFS(fsys, "gopher.png", int(x), int(y))
+	koebiten.DrawImageFS(nil, fsys, "sky.png", 0, 0)
+	koebiten.DrawImageFS(nil, fsys, "gopher.png", int(x), int(y))
 
 	for _, wall := range walls {
 		drawWalls(wall)
 	}
 
-	miniten.Println("Game Over")
-	miniten.Println("Score", score)
+	koebiten.Println("Game Over")
+	koebiten.Println("Score", score)
 
 	if isAnyKeyJustPressed() {
 		scene = "title"
@@ -163,10 +163,10 @@ func drawGameover() {
 
 func drawWalls(w *wall) {
 	// 上の壁の描画
-	miniten.DrawImageFS(fsys, "wall.png", w.wallX, w.holeY-wallHeight)
+	koebiten.DrawImageFS(nil, fsys, "wall.png", w.wallX, w.holeY-wallHeight)
 
 	// 下の壁の描画
-	miniten.DrawImageFS(fsys, "wall.png", w.wallX, w.holeY+holeHeight)
+	koebiten.DrawImageFS(nil, fsys, "wall.png", w.wallX, w.holeY+holeHeight)
 }
 
 func hitTestRects(aLeft, aTop, aRight, aBottom, bLeft, bTop, bRight, bBottom int) bool {
@@ -177,5 +177,5 @@ func hitTestRects(aLeft, aTop, aRight, aBottom, bLeft, bTop, bRight, bBottom int
 }
 
 func isAnyKeyJustPressed() bool {
-	return len(miniten.AppendJustPressedKeys(nil)) > 0
+	return len(koebiten.AppendJustPressedKeys(nil)) > 0
 }
