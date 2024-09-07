@@ -62,7 +62,6 @@ func IsClicked() bool {
 }
 
 func Println(args ...any) {
-
 	str := []string{}
 	for _, x := range args {
 		s, ok := x.(string)
@@ -82,16 +81,63 @@ func Println(args ...any) {
 	tinyfont.WriteLine(display, &tinyfont.Org01, 2, textY, strings.Join(str, " "), white)
 }
 
-func DrawRect(x, y, w, h int) {
-	tinydraw.Rectangle(display, int16(x), int16(y), int16(w), int16(h), white)
+func DrawText(dst Displayer, str string, font tinyfont.Fonter, x, y int16, c pixel.BaseColor) {
+	if dst == nil {
+		dst = display
+	}
+	if font == nil {
+		font = &tinyfont.Org01
+	}
+	tinyfont.WriteLine(dst, font, x, y, str, c.RGBA())
 }
 
-func DrawLine(x1, y1, x2, y2 int) {
-	tinydraw.Line(display, int16(x1), int16(y1), int16(x2), int16(y2), white)
+func DrawRect(dst Displayer, x, y, w, h int, c pixel.BaseColor) {
+	if dst == nil {
+		dst = display
+	}
+	tinydraw.Rectangle(dst, int16(x), int16(y), int16(w), int16(h), c.RGBA())
 }
 
-func DrawCircle(x, y, r int) {
-	tinydraw.Circle(display, int16(x), int16(y), int16(r), white)
+func DrawFilledRect(dst Displayer, x, y, w, h int, c pixel.BaseColor) {
+	if dst == nil {
+		dst = display
+	}
+	tinydraw.FilledRectangle(dst, int16(x), int16(y), int16(w), int16(h), c.RGBA())
+}
+
+func DrawLine(dst Displayer, x1, y1, x2, y2 int, c pixel.BaseColor) {
+	if dst == nil {
+		dst = display
+	}
+	tinydraw.Line(dst, int16(x1), int16(y1), int16(x2), int16(y2), c.RGBA())
+}
+
+func DrawCircle(dst Displayer, x, y, r int, c pixel.BaseColor) {
+	if dst == nil {
+		dst = display
+	}
+	tinydraw.Circle(dst, int16(x), int16(y), int16(r), c.RGBA())
+}
+
+func DrawFilledCircle(dst Displayer, x, y, r int, c pixel.BaseColor) {
+	if dst == nil {
+		dst = display
+	}
+	tinydraw.FilledCircle(dst, int16(x), int16(y), int16(r), c.RGBA())
+}
+
+func DrawTriangle(dst Displayer, x0, y0, x1, y1, x2, y2 int, c pixel.BaseColor) {
+	if dst == nil {
+		dst = display
+	}
+	tinydraw.Triangle(dst, int16(x0), int16(y0), int16(x1), int16(y1), int16(x2), int16(y2), c.RGBA())
+}
+
+func DrawFilledTriangle(dst Displayer, x0, y0, x1, y1, x2, y2 int, c pixel.BaseColor) {
+	if dst == nil {
+		dst = display
+	}
+	tinydraw.FilledTriangle(dst, int16(x0), int16(y0), int16(x1), int16(y1), int16(x2), int16(y2), c.RGBA())
 }
 
 var (
@@ -99,7 +145,10 @@ var (
 	pngBuffer map[string]pixel.Image[pixel.Monochrome]
 )
 
-func DrawImageFS(fsys fs.FS, path string, x, y int) {
+func DrawImageFS(dst Displayer, fsys fs.FS, path string, x, y int) {
+	if dst == nil {
+		dst = display
+	}
 	img, ok := pngBuffer[path]
 	if !ok {
 		p, err := fsys.Open(path)
@@ -143,7 +192,7 @@ func DrawImageFS(fsys fs.FS, path string, x, y int) {
 	for yy := 0; yy < h; yy++ {
 		for xx := 0; xx < w; xx++ {
 			if img.Get(xx, yy) == true {
-				display.SetPixel(int16(x)+int16(xx), int16(y)+int16(yy), white)
+				dst.SetPixel(int16(x)+int16(xx), int16(y)+int16(yy), white)
 			}
 		}
 	}
