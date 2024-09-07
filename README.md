@@ -1,6 +1,7 @@
 # koebiten
 
-koebiten is a miniten clone that runs on TinyGo.
+Koebiten is a package for making simple games.
+It was initially created based on a package called miniten.
 
 * https://github.com/eihigh/miniten
 
@@ -14,17 +15,6 @@ For now, koebiten only works on [zero-kb02](https://github.com/sago35/keyboards)
 
 ```
 $ tinygo flash --target waveshare-rp2040-zero --size short ./games/flappygopher
-```
-
-### run with miniten
-
-![](./images/flappygopher_miniten.png)
-
-The same source code mentioned above can be run on miniten and on a computer.  
-When run in a non-TinyGo environment, koebiten simply calls miniten's functions.  
-
-```
-$ go run ./games/flappygopher
 ```
 
 ## link
