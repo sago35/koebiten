@@ -85,6 +85,10 @@ func DrawRect(x, y, w, h int) {
 	tinydraw.Rectangle(display, int16(x), int16(y), int16(w), int16(h), white)
 }
 
+func DrawLine(x1, y1, x2, y2 int) {
+	tinydraw.Line(display, int16(x1), int16(y1), int16(x2), int16(y2), white)
+}
+
 func DrawCircle(x, y, r int) {
 	tinydraw.Circle(display, int16(x), int16(y), int16(r), white)
 }
