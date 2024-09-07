@@ -17,6 +17,7 @@ import (
 	"tinygo.org/x/tinyfont"
 )
 
+// Displayer interface for display operations.
 type Displayer interface {
 	drivers.Displayer
 	ClearDisplay()
@@ -26,9 +27,7 @@ type Displayer interface {
 var (
 	btn     machine.Pin
 	display Displayer
-)
 
-var (
 	textY int16
 )
 
@@ -41,6 +40,7 @@ func init() {
 	pngBuffer = map[string]pixel.Image[pixel.Monochrome]{}
 }
 
+// Run starts the main loop for the application.
 func Run(d func()) error {
 	tick := time.Tick(32 * time.Millisecond)
 	for {
@@ -54,6 +54,7 @@ func Run(d func()) error {
 	return nil
 }
 
+// SetWindowSize sets the size of the display window.
 func SetWindowSize(w, h int) {
 }
 
@@ -61,6 +62,7 @@ func IsClicked() bool {
 	return !btn.Get()
 }
 
+// Println prints formatted output to the display.
 func Println(args ...any) {
 	str := []string{}
 	for _, x := range args {
@@ -81,6 +83,7 @@ func Println(args ...any) {
 	tinyfont.WriteLine(display, &tinyfont.Org01, 2, textY, strings.Join(str, " "), white)
 }
 
+// DrawText draws text on the display.
 func DrawText(dst Displayer, str string, font tinyfont.Fonter, x, y int16, c pixel.BaseColor) {
 	if dst == nil {
 		dst = display
@@ -91,6 +94,7 @@ func DrawText(dst Displayer, str string, font tinyfont.Fonter, x, y int16, c pix
 	tinyfont.WriteLine(dst, font, x, y, str, c.RGBA())
 }
 
+// DrawRect draws a rectangle on the display.
 func DrawRect(dst Displayer, x, y, w, h int, c pixel.BaseColor) {
 	if dst == nil {
 		dst = display
@@ -98,6 +102,7 @@ func DrawRect(dst Displayer, x, y, w, h int, c pixel.BaseColor) {
 	tinydraw.Rectangle(dst, int16(x), int16(y), int16(w), int16(h), c.RGBA())
 }
 
+// DrawFilledRect draws a filled rectangle on the display.
 func DrawFilledRect(dst Displayer, x, y, w, h int, c pixel.BaseColor) {
 	if dst == nil {
 		dst = display
@@ -105,6 +110,7 @@ func DrawFilledRect(dst Displayer, x, y, w, h int, c pixel.BaseColor) {
 	tinydraw.FilledRectangle(dst, int16(x), int16(y), int16(w), int16(h), c.RGBA())
 }
 
+// DrawLine draws a line on the display.
 func DrawLine(dst Displayer, x1, y1, x2, y2 int, c pixel.BaseColor) {
 	if dst == nil {
 		dst = display
@@ -112,6 +118,7 @@ func DrawLine(dst Displayer, x1, y1, x2, y2 int, c pixel.BaseColor) {
 	tinydraw.Line(dst, int16(x1), int16(y1), int16(x2), int16(y2), c.RGBA())
 }
 
+// DrawCircle draws a circle on the display.
 func DrawCircle(dst Displayer, x, y, r int, c pixel.BaseColor) {
 	if dst == nil {
 		dst = display
@@ -119,6 +126,7 @@ func DrawCircle(dst Displayer, x, y, r int, c pixel.BaseColor) {
 	tinydraw.Circle(dst, int16(x), int16(y), int16(r), c.RGBA())
 }
 
+// DrawFilledCircle draws a filled circle on the display.
 func DrawFilledCircle(dst Displayer, x, y, r int, c pixel.BaseColor) {
 	if dst == nil {
 		dst = display
@@ -126,6 +134,7 @@ func DrawFilledCircle(dst Displayer, x, y, r int, c pixel.BaseColor) {
 	tinydraw.FilledCircle(dst, int16(x), int16(y), int16(r), c.RGBA())
 }
 
+// DrawTriangle draws a triangle on the display.
 func DrawTriangle(dst Displayer, x0, y0, x1, y1, x2, y2 int, c pixel.BaseColor) {
 	if dst == nil {
 		dst = display
@@ -133,6 +142,7 @@ func DrawTriangle(dst Displayer, x0, y0, x1, y1, x2, y2 int, c pixel.BaseColor) 
 	tinydraw.Triangle(dst, int16(x0), int16(y0), int16(x1), int16(y1), int16(x2), int16(y2), c.RGBA())
 }
 
+// DrawFilledTriangle draws a filled triangle on the display.
 func DrawFilledTriangle(dst Displayer, x0, y0, x1, y1, x2, y2 int, c pixel.BaseColor) {
 	if dst == nil {
 		dst = display
@@ -145,6 +155,7 @@ var (
 	pngBuffer map[string]pixel.Image[pixel.Monochrome]
 )
 
+// DrawImageFS draws an image from the filesystem onto the display.
 func DrawImageFS(dst Displayer, fsys fs.FS, path string, x, y int) {
 	if dst == nil {
 		dst = display
