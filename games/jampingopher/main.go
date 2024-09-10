@@ -20,30 +20,22 @@ type platform struct {
 }
 
 var (
-	x    = 50.0
-	y    = 30.0
-	vy   = 0.0
-	g    = 0.05
-	jump = -1.0
-
-	frames      = 30
-	interval    = 120
-	cloudStartX = 200
-	clouds      = []*cloud{}
-	cloudX      = 20
-	holeYMax    = 48
-	cloudHeight = 8
-
-	platforms = []*platform{
-		{pY: 60},
-	}
-
-	scene = "title"
-	score = 0
-
-	isOnPlatform  = false
-	isJustClicked = false
-	isPrevClicked = false
+	x            = 50.0
+	y            = 30.0
+	vy           = 0.0
+	g            = 0.05
+	jump         = -1.0
+	frames       = 30
+	interval     = 120
+	cloudStartX  = 200
+	clouds       = []*cloud{}
+	cloudX       = 20
+	holeYMax     = 48
+	cloudHeight  = 8
+	platforms    = []*platform{{pY: 60}}
+	scene        = "title"
+	score        = 0
+	isOnPlatform = false
 )
 
 func main() {
@@ -52,11 +44,6 @@ func main() {
 }
 
 func draw() {
-	isJustClicked = koebiten.IsClicked() && !isPrevClicked
-	isPrevClicked = koebiten.IsClicked()
-
-	koebiten.DrawImageFS(fsys, "sky.png", 0, 0)
-
 	switch scene {
 	case "title":
 		drawTitle()
@@ -69,18 +56,16 @@ func draw() {
 
 func drawTitle() {
 	koebiten.Println("click to start")
-
-	if isJustClicked {
+	if isAnyKeyJustPressed() {
 		scene = "game"
 	}
 }
 
 func drawGame() {
-	koebiten.DrawImageFS(fsys, "sky.png", 0, 0)
+	koebiten.DrawImageFS(nil, fsys, "sky.png", 0, 0)
 	koebiten.Println("Score", score)
-	koebiten.DrawImageFS(fsys, "platform.png", 0, 60)
+	koebiten.DrawImageFS(nil, fsys, "platform.png", 0, 60)
 
-	// 高く上がりすぎてもゲームオーバー
 	if y <= -10.0 {
 		scene = "gameover"
 	}
@@ -91,7 +76,7 @@ func drawGame() {
 		}
 	}
 
-	if koebiten.IsClicked() {
+	if isAnyKeyJustPressed() {
 		vy = jump
 		isOnPlatform = false
 	}
@@ -100,7 +85,6 @@ func drawGame() {
 	y += vy // 位置に速度を足す
 
 	for _, platform := range platforms {
-		// プラットフォームとの当たり判定
 		if hitPlatformRect(int(y), int(x), int(y)+22, int(x)+22, platform.pY, 0, platform.pY+22, 128) {
 			isOnPlatform = true
 		}
@@ -111,32 +95,19 @@ func drawGame() {
 		y = 33.5
 	}
 
-	frames += 1
-
+	frames++
 	walkGopher(x, y, frames)
 
 	if frames%interval == 0 {
 		cloud := &cloud{cloudStartX, rand.N(holeYMax)}
 		clouds = append(clouds, cloud)
 	}
+
 	for _, cloud := range clouds {
 		cloud.cloudX -= 1 // 少しずつ左へ
-	}
-	for _, cloud := range clouds {
 		drawWalls(cloud)
 
-		aLeft := int(x)
-		aTop := int(y)
-		aRight := int(x) + 20
-		aBottom := int(y) + 8
-
-		bLeft := cloud.cloudX
-		bTop := cloud.holeY - cloudHeight
-		bRight := cloud.cloudX + cloudX
-		bBottom := cloud.holeY + cloudHeight
-
-		// 上の壁との当たり判定
-		if hitRects(aLeft, aTop, aRight, aBottom, bLeft, bTop, bRight, bBottom) {
+		if hitRects(int(x), int(y), int(x)+20, int(y)+8, cloud.cloudX, cloud.holeY-cloudHeight, cloud.cloudX+cloudX, cloud.holeY+cloudHeight) {
 			scene = "gameover"
 		}
 	}
@@ -146,41 +117,33 @@ func drawGameover() {
 	koebiten.Println("Game Over")
 	koebiten.Println("Score:", score)
 
-	if isJustClicked {
+	if isAnyKeyJustPressed() {
 		scene = "title"
-
-		x = 50.0
-		y = 30.0
-		vy = 0.0
-		score = 0
+		x, y, vy, score = 50.0, 30.0, 0.0, 0
 		clouds = []*cloud{}
 	}
 }
 
 func drawWalls(c *cloud) {
-	// 上の壁の描画
-	koebiten.DrawImageFS(fsys, "cloud.png", c.cloudX, c.holeY-cloudHeight)
+	koebiten.DrawImageFS(nil, fsys, "cloud.png", c.cloudX, c.holeY-cloudHeight)
 }
 
 func walkGopher(x, y float64, frames int) {
-	if frames%2 == 0 {
-		// 画像を切り替える
-		koebiten.DrawImageFS(fsys, "gopher.png", int(x), int(y))
-	} else {
-		koebiten.DrawImageFS(fsys, "gopher_r.png", int(x), int(y))
+	img := "gopher.png"
+	if frames%2 != 0 {
+		img = "gopher_r.png"
 	}
+	koebiten.DrawImageFS(nil, fsys, img, int(x), int(y))
 }
 
 func hitRects(aLeft, aTop, aRight, aBottom, bLeft, bTop, bRight, bBottom int) bool {
-	return aTop < bBottom &&
-		bTop < aBottom &&
-		aLeft < bRight &&
-		bLeft < aRight
+	return aTop < bBottom && bTop < aBottom && aLeft < bRight && bLeft < aRight
 }
 
 func hitPlatformRect(aTop, aLeft, aBottom, aRight, bTop, bLeft, bBottom, bRight int) bool {
-	return aTop < bBottom &&
-		bTop < aBottom &&
-		aLeft < bRight &&
-		bLeft < aRight
+	return aTop < bBottom && bTop < aBottom && aLeft < bRight && bLeft < aRight
+}
+
+func isAnyKeyJustPressed() bool {
+	return len(koebiten.AppendJustPressedKeys(nil)) > 0
 }
