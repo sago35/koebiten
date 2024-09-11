@@ -17,6 +17,18 @@ For now, koebiten only works on [zero-kb02](https://github.com/sago35/keyboards)
 $ tinygo flash --target waveshare-rp2040-zero --size short ./games/flappygopher
 ```
 
+## games/jumpingopher
+
+### run with koebiten
+
+![](./images/jumpingopher.jpg)
+
+```
+$ tinygo flash --target waveshare-rp2040-zero --size short ./games/jumpingopher
+```
+
+more info : [./games/jumpingopher](./games/jumpingopher)
+
 ## link
 
 * https://github.com/eihigh/miniten
