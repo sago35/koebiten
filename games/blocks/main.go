@@ -37,6 +37,7 @@ type Game struct {
 	score     int         // Score
 	highScore int         // High Score
 	scene     string
+	next      Tetromino
 }
 
 type Tetromino struct {
@@ -213,6 +214,12 @@ var (
 
 // Define T-shaped and other tetrominos including their rotation states in advance
 func (g *Game) createNewTetromino() Tetromino {
+	next := g.next
+	g.next = g.generateNewTetromino()
+	return next
+}
+
+func (g *Game) generateNewTetromino() Tetromino {
 	choice := randShapes[rand.Intn(len(randShapes))]
 
 	// Randomly select a tetromino and return it
@@ -228,6 +235,7 @@ func (g *Game) createNewTetromino() Tetromino {
 func NewGame() *Game {
 	rand.Seed(time.Now().UnixNano())
 	game := &Game{}
+	game.next = game.generateNewTetromino()
 	game.tetromino = game.createNewTetromino()
 	game.scene = "title"
 	return game
@@ -466,6 +474,7 @@ func (g *Game) drawTitle(screen *koebiten.Image) {
 				g.board[i][j] = 0
 			}
 		}
+		g.next = g.generateNewTetromino()
 		g.tetromino = g.createNewTetromino()
 		g.scene = "game"
 	}
@@ -508,6 +517,19 @@ func (g *Game) drawGame(screen *koebiten.Image) {
 	}
 
 	koebiten.DrawText(screen, "Score: "+strconv.Itoa(g.score), &tinyfont.Org01, 0, gridSize*24+6, frameColor)
+
+	// Draw the next tetromino
+	xoffset := 0
+	if g.tetromino.x < 4 {
+		xoffset = 8
+	}
+	for y, row := range g.next.shapes[0] {
+		for x, cell := range row {
+			if cell == 1 {
+				koebiten.DrawRect(screen, int((x+xoffset)*gridSize+1)+2, int((y)*gridSize+1), int(gridSize-2), int(gridSize-2), frameColor)
+			}
+		}
+	}
 }
 
 func (g *Game) drawGameover(screen *koebiten.Image) {
