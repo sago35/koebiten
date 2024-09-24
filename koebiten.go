@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image/color"
 	"io/fs"
+	"reflect"
 	"strings"
 	"time"
 
@@ -15,6 +16,26 @@ import (
 	"tinygo.org/x/tinydraw"
 	"tinygo.org/x/tinyfont"
 )
+
+type Image struct {
+}
+
+func (i *Image) Size() (x, y int16) {
+	return 0, 0
+}
+
+func (i *Image) SetPixel(x, y int16, c color.RGBA) {
+}
+
+func (i *Image) Display() error {
+	return nil
+}
+
+func (i *Image) ClearDisplay() {
+}
+
+func (i *Image) ClearBuffer() {
+}
 
 // Displayer interface for display operations.
 type Displayer interface {
@@ -52,8 +73,26 @@ func Run(d func()) error {
 	return nil
 }
 
+func RunGame(game Game) error {
+	tick := time.Tick(32 * time.Millisecond)
+	for {
+		<-tick
+		keyUpdate()
+		textY = 0
+		display.ClearBuffer()
+		game.Update()
+		game.Draw(nil)
+		display.Display()
+	}
+	return nil
+}
+
 // SetWindowSize sets the size of the display window.
 func SetWindowSize(w, h int) {
+}
+
+// SetWindowTitle sets the title of the display window.
+func SetWindowTitle(title string) {
 }
 
 // Println prints formatted output to the display.
@@ -79,7 +118,7 @@ func Println(args ...any) {
 
 // DrawText draws text on the display.
 func DrawText(dst Displayer, str string, font tinyfont.Fonter, x, y int16, c pixel.BaseColor) {
-	if dst == nil {
+	if isNil(dst) {
 		dst = display
 	}
 	if font == nil {
@@ -90,7 +129,7 @@ func DrawText(dst Displayer, str string, font tinyfont.Fonter, x, y int16, c pix
 
 // DrawRect draws a rectangle on the display.
 func DrawRect(dst Displayer, x, y, w, h int, c pixel.BaseColor) {
-	if dst == nil {
+	if isNil(dst) {
 		dst = display
 	}
 	tinydraw.Rectangle(dst, int16(x), int16(y), int16(w), int16(h), c.RGBA())
@@ -98,7 +137,7 @@ func DrawRect(dst Displayer, x, y, w, h int, c pixel.BaseColor) {
 
 // DrawFilledRect draws a filled rectangle on the display.
 func DrawFilledRect(dst Displayer, x, y, w, h int, c pixel.BaseColor) {
-	if dst == nil {
+	if isNil(dst) {
 		dst = display
 	}
 	tinydraw.FilledRectangle(dst, int16(x), int16(y), int16(w), int16(h), c.RGBA())
@@ -106,7 +145,7 @@ func DrawFilledRect(dst Displayer, x, y, w, h int, c pixel.BaseColor) {
 
 // DrawLine draws a line on the display.
 func DrawLine(dst Displayer, x1, y1, x2, y2 int, c pixel.BaseColor) {
-	if dst == nil {
+	if isNil(dst) {
 		dst = display
 	}
 	tinydraw.Line(dst, int16(x1), int16(y1), int16(x2), int16(y2), c.RGBA())
@@ -114,7 +153,7 @@ func DrawLine(dst Displayer, x1, y1, x2, y2 int, c pixel.BaseColor) {
 
 // DrawCircle draws a circle on the display.
 func DrawCircle(dst Displayer, x, y, r int, c pixel.BaseColor) {
-	if dst == nil {
+	if isNil(dst) {
 		dst = display
 	}
 	tinydraw.Circle(dst, int16(x), int16(y), int16(r), c.RGBA())
@@ -122,7 +161,7 @@ func DrawCircle(dst Displayer, x, y, r int, c pixel.BaseColor) {
 
 // DrawFilledCircle draws a filled circle on the display.
 func DrawFilledCircle(dst Displayer, x, y, r int, c pixel.BaseColor) {
-	if dst == nil {
+	if isNil(dst) {
 		dst = display
 	}
 	tinydraw.FilledCircle(dst, int16(x), int16(y), int16(r), c.RGBA())
@@ -130,7 +169,7 @@ func DrawFilledCircle(dst Displayer, x, y, r int, c pixel.BaseColor) {
 
 // DrawTriangle draws a triangle on the display.
 func DrawTriangle(dst Displayer, x0, y0, x1, y1, x2, y2 int, c pixel.BaseColor) {
-	if dst == nil {
+	if isNil(dst) {
 		dst = display
 	}
 	tinydraw.Triangle(dst, int16(x0), int16(y0), int16(x1), int16(y1), int16(x2), int16(y2), c.RGBA())
@@ -138,7 +177,7 @@ func DrawTriangle(dst Displayer, x0, y0, x1, y1, x2, y2 int, c pixel.BaseColor) 
 
 // DrawFilledTriangle draws a filled triangle on the display.
 func DrawFilledTriangle(dst Displayer, x0, y0, x1, y1, x2, y2 int, c pixel.BaseColor) {
-	if dst == nil {
+	if isNil(dst) {
 		dst = display
 	}
 	tinydraw.FilledTriangle(dst, int16(x0), int16(y0), int16(x1), int16(y1), int16(x2), int16(y2), c.RGBA())
@@ -151,7 +190,7 @@ var (
 
 // DrawImageFS draws an image from the filesystem onto the display.
 func DrawImageFS(dst Displayer, fsys fs.FS, path string, x, y int) {
-	if dst == nil {
+	if isNil(dst) {
 		dst = display
 	}
 	img, ok := pngBuffer[path]
@@ -201,4 +240,8 @@ func DrawImageFS(dst Displayer, fsys fs.FS, path string, x, y int) {
 			}
 		}
 	}
+}
+
+func isNil(d Displayer) bool {
+	return d == nil || (reflect.ValueOf(d).Kind() == reflect.Ptr && reflect.ValueOf(d).IsNil())
 }
