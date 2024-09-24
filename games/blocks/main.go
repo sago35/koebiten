@@ -7,9 +7,6 @@ import (
 	"time"
 
 	"github.com/sago35/koebiten"
-	ebiten "github.com/sago35/koebiten"
-	ebitenutil "github.com/sago35/koebiten"
-	inpututil "github.com/sago35/koebiten"
 	"tinygo.org/x/drivers/pixel"
 	"tinygo.org/x/tinyfont"
 )
@@ -38,6 +35,7 @@ type Game struct {
 	board     [12][24]int // Game board
 	tetromino Tetromino   // Current block
 	score     int         // Score
+	highScore int         // High Score
 	scene     string
 }
 
@@ -234,6 +232,10 @@ func NewGame() *Game {
 
 // Game update process
 func (g *Game) Update() error {
+	if g.scene != "game" {
+		return nil
+	}
+
 	if time.Since(lastDropTime) > dropInterval {
 		if g.isValidPosition(g.tetromino.x, g.tetromino.y+1, g.currentShape()) {
 			g.tetromino.y++
@@ -250,29 +252,29 @@ func (g *Game) Update() error {
 
 	if time.Since(lastMoveTime) > moveInterval {
 		// Move left
-		if inpututil.KeyPressDuration(ebiten.KeyUp) > 0 {
+		if koebiten.KeyPressDuration(koebiten.KeyUp) > 0 {
 			if g.isValidPosition(g.tetromino.x-1, g.tetromino.y, g.currentShape()) {
 				g.tetromino.x--
 			}
-			if inpututil.KeyPressDuration(ebiten.KeyUp) < 10 {
+			if koebiten.KeyPressDuration(koebiten.KeyUp) < 10 {
 				lastMoveTime = time.Now().Add(moveInterval * 2)
 			} else {
 				lastMoveTime = time.Now()
 			}
 		}
 		// Move right
-		if inpututil.KeyPressDuration(ebiten.KeyDown) > 0 {
+		if koebiten.KeyPressDuration(koebiten.KeyDown) > 0 {
 			if g.isValidPosition(g.tetromino.x+1, g.tetromino.y, g.currentShape()) {
 				g.tetromino.x++
 			}
-			if inpututil.KeyPressDuration(ebiten.KeyDown) < 10 {
+			if koebiten.KeyPressDuration(koebiten.KeyDown) < 10 {
 				lastMoveTime = time.Now().Add(moveInterval * 2)
 			} else {
 				lastMoveTime = time.Now()
 			}
 		}
 		// Move down
-		if inpututil.KeyPressDuration(ebiten.KeyLeft) > 0 {
+		if koebiten.KeyPressDuration(koebiten.KeyLeft) > 0 {
 			if g.isValidPosition(g.tetromino.x, g.tetromino.y+1, g.currentShape()) {
 				g.tetromino.y++
 			} else {
@@ -288,7 +290,7 @@ func (g *Game) Update() error {
 	}
 
 	// Move down faster
-	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
+	if koebiten.IsKeyJustPressed(koebiten.KeyRight) || koebiten.IsKeyJustPressed(koebiten.Key9) {
 		for g.isValidPosition(g.tetromino.x, g.tetromino.y+1, g.currentShape()) {
 			g.tetromino.y++
 		}
@@ -300,17 +302,17 @@ func (g *Game) Update() error {
 		}
 	}
 
-	if inpututil.KeyPressDuration(ebiten.KeyUp) == 0 &&
-		inpututil.KeyPressDuration(ebiten.KeyDown) == 0 &&
-		inpututil.KeyPressDuration(ebiten.KeyLeft) == 0 &&
-		inpututil.KeyPressDuration(ebiten.KeyRight) == 0 {
+	if koebiten.KeyPressDuration(koebiten.KeyUp) == 0 &&
+		koebiten.KeyPressDuration(koebiten.KeyDown) == 0 &&
+		koebiten.KeyPressDuration(koebiten.KeyLeft) == 0 &&
+		koebiten.KeyPressDuration(koebiten.KeyRight) == 0 {
 		lastMoveTime = time.Time{}
 	}
 
 	// Rotate the block
-	if inpututil.IsKeyJustPressed(ebiten.Key8) || inpututil.IsKeyJustPressed(ebiten.KeyRotaryRight) {
+	if koebiten.IsKeyJustPressed(koebiten.Key8) || koebiten.IsKeyJustPressed(koebiten.KeyRotaryRight) {
 		g.rotateTetromino(true)
-	} else if inpututil.IsKeyJustPressed(ebiten.Key4) || inpututil.IsKeyJustPressed(ebiten.KeyRotaryLeft) {
+	} else if koebiten.IsKeyJustPressed(koebiten.Key4) || koebiten.IsKeyJustPressed(koebiten.KeyRotaryLeft) {
 		g.rotateTetromino(false)
 	}
 	return nil
@@ -432,7 +434,7 @@ func (g *Game) currentShape() [][]int {
 	return g.tetromino.shapes[g.tetromino.rotation]
 }
 
-func (g *Game) Draw(screen *ebiten.Image) {
+func (g *Game) Draw(screen *koebiten.Image) {
 	switch g.scene {
 	case "title":
 		g.drawTitle(screen)
@@ -443,56 +445,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 }
 
-func (g *Game) drawTitle(screen *ebiten.Image) {
-	ebiten.Println("click")
-	ebiten.Println("to start")
-	if isAnyKeyJustPressed() {
-		g.scene = "game"
-	}
-}
-
-// Game drawing process
-func (g *Game) drawGame(screen *ebiten.Image) {
-	ebitenutil.DrawLine(screen, 1, 0, 1, gridSize*24, frameColor)
-	ebitenutil.DrawLine(screen, gridSize*12+2, 0, gridSize*12+2, gridSize*24+1, frameColor)
-	ebitenutil.DrawLine(screen, 1, gridSize*24+1, gridSize*12+2, gridSize*24+1, frameColor)
-
-	// Calculate the falling position of the tetromino
-	ghostY := g.calculateDropPosition()
-
-	// Draw the guide
-	for y, row := range g.currentShape() {
-		for x, cell := range row {
-			if cell == 1 {
-				ebitenutil.DrawRect(screen, int((g.tetromino.x+x)*gridSize+1)+2, int((ghostY+y)*gridSize+1), int(gridSize-2), int(gridSize-2), frameColor)
-			}
-		}
-	}
-
-	// Draw the game board
-	for y := 0; y < 24; y++ {
-		for x := 0; x < 12; x++ {
-			if g.board[x][y] == 1 {
-				ebitenutil.DrawFilledRect(screen, int(x*gridSize)+2, int(y*gridSize), gridSize-1, gridSize-1, frameColor)
-			}
-		}
-	}
-
-	// Draw the tetromino
-	for y, row := range g.currentShape() {
-		for x, cell := range row {
-			if cell == 1 {
-				ebitenutil.DrawFilledRect(screen, int((g.tetromino.x+x)*gridSize)+2, int((g.tetromino.y+y)*gridSize), gridSize-1, gridSize-1, frameColor)
-			}
-		}
-	}
-
-	ebitenutil.DrawText(screen, "Score: "+strconv.Itoa(g.score), &tinyfont.Org01, 0, gridSize*24+6, frameColor)
-}
-
-func (g *Game) drawGameover(screen *ebiten.Image) {
-	ebiten.Println("gameover")
-	ebiten.Println("score: " + strconv.Itoa(g.score))
+func (g *Game) drawTitle(screen *koebiten.Image) {
+	koebiten.Println("click")
+	koebiten.Println("to start")
+	koebiten.Println("")
+	koebiten.Println("high score")
+	koebiten.Println("  " + strconv.Itoa(g.highScore))
 	if isAnyKeyJustPressed() {
 		g.score = 0
 		dropInterval = time.Duration(1000 * time.Millisecond)
@@ -505,6 +463,57 @@ func (g *Game) drawGameover(screen *ebiten.Image) {
 				g.board[i][j] = 0
 			}
 		}
+		g.tetromino = g.createNewTetromino()
+		g.scene = "game"
+	}
+}
+
+// Game drawing process
+func (g *Game) drawGame(screen *koebiten.Image) {
+	koebiten.DrawLine(screen, 1, 0, 1, gridSize*24, frameColor)
+	koebiten.DrawLine(screen, gridSize*12+2, 0, gridSize*12+2, gridSize*24+1, frameColor)
+	koebiten.DrawLine(screen, 1, gridSize*24+1, gridSize*12+2, gridSize*24+1, frameColor)
+
+	// Calculate the falling position of the tetromino
+	ghostY := g.calculateDropPosition()
+
+	// Draw the guide
+	for y, row := range g.currentShape() {
+		for x, cell := range row {
+			if cell == 1 {
+				koebiten.DrawRect(screen, int((g.tetromino.x+x)*gridSize+1)+2, int((ghostY+y)*gridSize+1), int(gridSize-2), int(gridSize-2), frameColor)
+			}
+		}
+	}
+
+	// Draw the game board
+	for y := 0; y < 24; y++ {
+		for x := 0; x < 12; x++ {
+			if g.board[x][y] == 1 {
+				koebiten.DrawFilledRect(screen, int(x*gridSize)+2, int(y*gridSize), gridSize-1, gridSize-1, frameColor)
+			}
+		}
+	}
+
+	// Draw the tetromino
+	for y, row := range g.currentShape() {
+		for x, cell := range row {
+			if cell == 1 {
+				koebiten.DrawFilledRect(screen, int((g.tetromino.x+x)*gridSize)+2, int((g.tetromino.y+y)*gridSize), gridSize-1, gridSize-1, frameColor)
+			}
+		}
+	}
+
+	koebiten.DrawText(screen, "Score: "+strconv.Itoa(g.score), &tinyfont.Org01, 0, gridSize*24+6, frameColor)
+}
+
+func (g *Game) drawGameover(screen *koebiten.Image) {
+	koebiten.Println("gameover")
+	koebiten.Println("score: " + strconv.Itoa(g.score))
+	if isAnyKeyJustPressed() {
+		if g.highScore < g.score {
+			g.highScore = g.score
+		}
 		g.scene = "title"
 	}
 }
@@ -515,13 +524,13 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
 }
 
 func main() {
-	ebiten.SetRotate()
-	ebiten.SetWindowSize(screenWidth, screenHeight)
-	ebiten.SetWindowTitle("Tetris in Go")
+	koebiten.SetRotate()
+	koebiten.SetWindowSize(screenWidth, screenHeight)
+	koebiten.SetWindowTitle("Tetris in Go")
 
 	game := NewGame()
 
-	if err := ebiten.RunGame(game); err != nil {
+	if err := koebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
 }
