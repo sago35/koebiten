@@ -45,10 +45,9 @@ type Tetromino struct {
 	x, y     int       // Position
 }
 
-// Define T-shaped and other tetrominos including their rotation states in advance
-func (g *Game) createNewTetromino() Tetromino {
+var (
 	// 4 rotation states for T-shaped tetromino
-	tShapes := [][][]int{
+	tShapes = [][][]int{
 		{
 			{0, 1, 0},
 			{1, 1, 1},
@@ -73,7 +72,7 @@ func (g *Game) createNewTetromino() Tetromino {
 
 	// Other tetrominos also have rotation states
 	// Examples: I-shaped, O-shaped, L-shaped, J-shaped, S-shaped, Z-shaped, etc.
-	iShapes := [][][]int{
+	iShapes = [][][]int{
 		{
 			{0, 0, 0, 0},
 			{1, 1, 1, 1},
@@ -100,14 +99,14 @@ func (g *Game) createNewTetromino() Tetromino {
 		},
 	}
 
-	oShapes := [][][]int{
+	oShapes = [][][]int{
 		{
 			{1, 1},
 			{1, 1},
 		},
 	}
 
-	lShapes := [][][]int{
+	lShapes = [][][]int{
 		{
 			{0, 0, 0},
 			{1, 1, 1},
@@ -130,7 +129,7 @@ func (g *Game) createNewTetromino() Tetromino {
 		},
 	}
 
-	jShapes := [][][]int{
+	jShapes = [][][]int{
 		{
 			{0, 0, 0},
 			{1, 1, 1},
@@ -153,7 +152,7 @@ func (g *Game) createNewTetromino() Tetromino {
 		},
 	}
 
-	sShapes := [][][]int{
+	sShapes = [][][]int{
 		{
 			{0, 0, 0},
 			{0, 1, 1},
@@ -176,7 +175,7 @@ func (g *Game) createNewTetromino() Tetromino {
 		},
 	}
 
-	zShapes := [][][]int{
+	zShapes = [][][]int{
 		{
 			{0, 0, 0},
 			{1, 1, 0},
@@ -201,7 +200,7 @@ func (g *Game) createNewTetromino() Tetromino {
 
 	// Generate a tetromino randomly
 	// Handle other tetrominos similarly
-	randShapes := [][][][]int{
+	randShapes = [][][][]int{
 		tShapes,
 		iShapes,
 		oShapes,
@@ -210,6 +209,10 @@ func (g *Game) createNewTetromino() Tetromino {
 		sShapes,
 		zShapes,
 	}
+)
+
+// Define T-shaped and other tetrominos including their rotation states in advance
+func (g *Game) createNewTetromino() Tetromino {
 	choice := randShapes[rand.Intn(len(randShapes))]
 
 	// Randomly select a tetromino and return it
@@ -450,7 +453,7 @@ func (g *Game) drawTitle(screen *koebiten.Image) {
 	koebiten.Println("to start")
 	koebiten.Println("")
 	koebiten.Println("high score")
-	koebiten.Println("  " + strconv.Itoa(g.highScore))
+	koebiten.Println("  ", g.highScore)
 	if isAnyKeyJustPressed() {
 		g.score = 0
 		dropInterval = time.Duration(1000 * time.Millisecond)
@@ -509,7 +512,7 @@ func (g *Game) drawGame(screen *koebiten.Image) {
 
 func (g *Game) drawGameover(screen *koebiten.Image) {
 	koebiten.Println("gameover")
-	koebiten.Println("score: " + strconv.Itoa(g.score))
+	koebiten.Println("score: ", g.score)
 	if isAnyKeyJustPressed() {
 		if g.highScore < g.score {
 			g.highScore = g.score
