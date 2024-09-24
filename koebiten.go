@@ -95,6 +95,10 @@ func SetWindowSize(w, h int) {
 func SetWindowTitle(title string) {
 }
 
+func SetRotate() {
+	display = &RotatedDisplay{display}
+}
+
 // Println prints formatted output to the display.
 func Println(args ...any) {
 	str := []string{}

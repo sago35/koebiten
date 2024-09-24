@@ -75,6 +75,7 @@ func init() {
 	})
 	d.SetRotation(drivers.Rotation180)
 	d.ClearDisplay()
+	display = &d
 
 	gpioPins = []machine.Pin{
 		machine.GPIO2, // rotary

@@ -19,3 +19,16 @@ func C565toRGBA(c uint16) color.RGBA {
 	b := ((c & 0x001F) >> 0) << 3
 	return color.RGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: 0xFF}
 }
+
+type RotatedDisplay struct {
+	Displayer
+}
+
+func (d *RotatedDisplay) Size() (x, y int16) {
+	return y, x
+}
+
+func (d *RotatedDisplay) SetPixel(x, y int16, c color.RGBA) {
+	sx, _ := d.Displayer.Size()
+	d.Displayer.SetPixel(sx-y, x, c)
+}
