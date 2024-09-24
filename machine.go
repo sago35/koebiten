@@ -54,10 +54,10 @@ func init() {
 	ay.Configure(machine.ADCConfig{})
 
 	adcPins = []ADCDevice{
-		{ADC: ax, PressedFunc: func() bool { return ax.Get() < 0x4000 }}, // left
+		{ADC: ax, PressedFunc: func() bool { return ax.Get() < 0x6000 }}, // left
 		{ADC: ax, PressedFunc: func() bool { return 0xA000 < ax.Get() }}, // right
 		{ADC: ay, PressedFunc: func() bool { return 0xA000 < ay.Get() }}, // up
-		{ADC: ay, PressedFunc: func() bool { return ay.Get() < 0x4000 }}, // down
+		{ADC: ay, PressedFunc: func() bool { return ay.Get() < 0x6000 }}, // down
 	}
 
 	i2c := machine.I2C0
