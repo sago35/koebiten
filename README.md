@@ -1,5 +1,7 @@
 # koebiten
 
+**The API is not yet fixed.**
+
 Koebiten is a package for making simple games.
 It was initially created based on a package called miniten.
 
