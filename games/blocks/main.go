@@ -321,9 +321,9 @@ func (g *Game) Update() error {
 	}
 
 	// Rotate the block
-	if koebiten.IsKeyJustPressed(koebiten.Key8) || koebiten.IsKeyJustPressed(koebiten.KeyRotaryRight) {
+	if koebiten.IsKeyJustPressed(koebiten.Key4) || koebiten.IsKeyJustPressed(koebiten.KeyRotaryRight) {
 		g.rotateTetromino(true)
-	} else if koebiten.IsKeyJustPressed(koebiten.Key4) || koebiten.IsKeyJustPressed(koebiten.KeyRotaryLeft) {
+	} else if koebiten.IsKeyJustPressed(koebiten.Key8) || koebiten.IsKeyJustPressed(koebiten.KeyRotaryLeft) {
 		g.rotateTetromino(false)
 	}
 	return nil
