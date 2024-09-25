@@ -13,7 +13,9 @@ import (
 var (
 	colPins          []machine.Pin
 	rowPins          []machine.Pin
+	rotaryPins       []machine.Pin
 	gpioPins         []machine.Pin
+	adcPins          []ADCDevice
 	enc              *encoders.QuadratureDevice
 	encOld           int
 	state            []State
@@ -35,7 +37,29 @@ const (
 	PressToRelease
 )
 
+type ADCDevice struct {
+	ADC         machine.ADC
+	PressedFunc func() bool
+}
+
+func (a ADCDevice) Get() bool {
+	return a.PressedFunc()
+}
+
 func init() {
+	machine.InitADC()
+	ax := machine.ADC{Pin: machine.GPIO29}
+	ay := machine.ADC{Pin: machine.GPIO28}
+	ax.Configure(machine.ADCConfig{})
+	ay.Configure(machine.ADCConfig{})
+
+	adcPins = []ADCDevice{
+		{ADC: ax, PressedFunc: func() bool { return ax.Get() < 0x6000 }}, // left
+		{ADC: ax, PressedFunc: func() bool { return 0xA000 < ax.Get() }}, // right
+		{ADC: ay, PressedFunc: func() bool { return 0xA000 < ay.Get() }}, // up
+		{ADC: ay, PressedFunc: func() bool { return ay.Get() < 0x6000 }}, // down
+	}
+
 	i2c := machine.I2C0
 	i2c.Configure(machine.I2CConfig{
 		Frequency: 2_800_000,
@@ -75,10 +99,6 @@ func init() {
 		machine.GPIO11,
 	}
 
-	state = make([]State, len(colPins)*len(rowPins)+4)
-	cycle = make([]int, len(colPins)*len(rowPins)+4)
-	duration = make([]int, len(colPins)*len(rowPins)+4)
-
 	for _, c := range colPins {
 		c.Configure(machine.PinConfig{Mode: machine.PinOutput})
 		c.Low()
@@ -88,7 +108,7 @@ func init() {
 		c.Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
 	}
 
-	rotaryPins := []machine.Pin{
+	rotaryPins = []machine.Pin{
 		machine.GPIO3,
 		machine.GPIO4,
 	}
@@ -104,12 +124,18 @@ func init() {
 	enc.Configure(encoders.QuadratureConfig{
 		Precision: 4,
 	})
+
+	state = make([]State, len(colPins)*len(rowPins)+len(gpioPins)+len(rotaryPins)+len(adcPins))
+	cycle = make([]int, len(colPins)*len(rowPins)+len(gpioPins)+len(rotaryPins)+len(adcPins))
+	duration = make([]int, len(colPins)*len(rowPins)+len(gpioPins)+len(rotaryPins)+len(adcPins))
+
 }
 
 func keyUpdate() {
 	keyGpioUpdate()
 	keyRotaryUpdate()
 	keyMatrixUpdate()
+	keyJoystickUpdate()
 }
 
 func keyGpioUpdate() {
@@ -249,6 +275,50 @@ func keyMatrixUpdate() {
 
 			colPins[c].Low()
 			colPins[c].Configure(machine.PinConfig{Mode: machine.PinInputPulldown})
+		}
+	}
+}
+
+func keyJoystickUpdate() {
+	for r, p := range adcPins {
+		current := p.Get()
+		idx := r + len(colPins)*len(rowPins) + len(gpioPins) + len(rotaryPins)
+
+		switch state[idx] {
+		case None:
+			if current {
+				if cycle[idx] >= debounce {
+					state[idx] = NoneToPress
+					cycle[idx] = 0
+				} else {
+					cycle[idx]++
+				}
+			} else {
+				cycle[idx] = 0
+			}
+		case NoneToPress:
+			state[idx] = Press
+			theInputState.keyDurations[idx]++
+			AppendJustPressedKeys([]Key{Key(idx)})
+		case Press:
+			AppendPressedKeys([]Key{Key(idx)})
+			theInputState.keyDurations[idx]++
+			if current {
+				cycle[idx] = 0
+				duration[idx]++
+			} else {
+				if cycle[idx] >= debounce {
+					state[idx] = PressToRelease
+					cycle[idx] = 0
+					duration[idx] = 0
+				} else {
+					cycle[idx]++
+				}
+			}
+		case PressToRelease:
+			state[idx] = None
+			AppendJustReleasedKeys([]Key{Key(idx)})
+			theInputState.keyDurations[idx] = 0
 		}
 	}
 }

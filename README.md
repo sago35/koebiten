@@ -1,5 +1,7 @@
 # koebiten
 
+**The API is not yet fixed.**
+
 Koebiten is a package for making simple games.
 It was initially created based on a package called miniten.
 
@@ -28,6 +30,10 @@ $ tinygo flash --target waveshare-rp2040-zero --size short ./games/jumpingopher
 ```
 
 more info : [./games/jumpingopher](./games/jumpingopher)
+
+## Others
+
+The other games are located under [./games](./games).
 
 ## link
 

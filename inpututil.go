@@ -5,7 +5,7 @@ import "sync"
 type Key int
 
 const (
-	KeyMax = 16
+	KeyMax = 20
 )
 
 const (
@@ -25,6 +25,10 @@ const (
 	KeyJoystick
 	KeyRotaryLeft
 	KeyRotaryRight
+	KeyLeft
+	KeyRight
+	KeyUp
+	KeyDown
 )
 
 type pos struct {
