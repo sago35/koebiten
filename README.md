@@ -29,6 +29,10 @@ $ tinygo flash --target waveshare-rp2040-zero --size short ./games/jumpingopher
 
 more info : [./games/jumpingopher](./games/jumpingopher)
 
+## Others
+
+The other games are located under [./games](./games).
+
 ## link
 
 * https://github.com/eihigh/miniten
