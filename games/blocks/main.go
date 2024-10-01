@@ -549,7 +549,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
 }
 
 func main() {
-	koebiten.SetRotate()
+	koebiten.SetRotate(koebiten.Rotation90)
 	koebiten.SetWindowSize(screenWidth, screenHeight)
 	koebiten.SetWindowTitle("Tetris in Go")
 
