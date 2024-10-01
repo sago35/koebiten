@@ -36,16 +36,24 @@ func (d *RotatedDisplay) Size() (x, y int16) {
 
 func (d *RotatedDisplay) SetPixel(x, y int16, c color.RGBA) {
 	switch d.mode {
-	case 0:
+	case Rotation0:
 		d.Displayer.SetPixel(x, y, c)
-	case 1:
+	case Rotation90:
 		sx, _ := d.Displayer.Size()
 		d.Displayer.SetPixel(sx-y, x, c)
-	case 2:
+	case Rotation180:
 		sx, sy := d.Displayer.Size()
 		d.Displayer.SetPixel(sx-x, sy-y, c)
-	case 3:
+	case Rotation270:
 		_, sy := d.Displayer.Size()
 		d.Displayer.SetPixel(y, sy-x, c)
 	}
 }
+
+// Clockwise rotation of the screen.
+const (
+	Rotation0 = iota
+	Rotation90
+	Rotation180
+	Rotation270
+)
