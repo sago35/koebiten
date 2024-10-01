@@ -3,6 +3,7 @@
 package koebiten
 
 import (
+	"errors"
 	"fmt"
 	"image/color"
 	"io/fs"
@@ -80,7 +81,13 @@ func RunGame(game Game) error {
 		keyUpdate()
 		textY = 0
 		display.ClearBuffer()
-		game.Update()
+		err := game.Update()
+		if err != nil {
+			if errors.Is(err, Termination) {
+				return nil
+			}
+			return err
+		}
 		game.Draw(nil)
 		display.Display()
 	}
