@@ -109,14 +109,14 @@ func init() {
 	}
 
 	rotaryPins = []machine.Pin{
-		machine.GPIO3,
 		machine.GPIO4,
+		machine.GPIO3,
 	}
 
 	if invertRotaryPins {
 		rotaryPins = []machine.Pin{
-			machine.GPIO4,
 			machine.GPIO3,
+			machine.GPIO4,
 		}
 	}
 	enc = encoders.NewQuadratureViaInterrupt(rotaryPins[0], rotaryPins[1])
