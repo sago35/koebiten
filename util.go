@@ -22,13 +22,30 @@ func C565toRGBA(c uint16) color.RGBA {
 
 type RotatedDisplay struct {
 	Displayer
+	mode int
 }
 
 func (d *RotatedDisplay) Size() (x, y int16) {
+	switch d.mode {
+	case 0, 2:
+		return x, y
+	default:
+	}
 	return y, x
 }
 
 func (d *RotatedDisplay) SetPixel(x, y int16, c color.RGBA) {
-	sx, _ := d.Displayer.Size()
-	d.Displayer.SetPixel(sx-y, x, c)
+	switch d.mode {
+	case 0:
+		d.Displayer.SetPixel(x, y, c)
+	case 1:
+		sx, _ := d.Displayer.Size()
+		d.Displayer.SetPixel(sx-y, x, c)
+	case 2:
+		sx, sy := d.Displayer.Size()
+		d.Displayer.SetPixel(sx-x, sy-y, c)
+	case 3:
+		_, sy := d.Displayer.Size()
+		d.Displayer.SetPixel(y, sy-x, c)
+	}
 }
