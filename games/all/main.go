@@ -16,7 +16,7 @@ func main() {
 		{
 			Title: "Flappy Gopher",
 			Game: func() {
-				koebiten.SetRotate(koebiten.Rotation0)
+				koebiten.SetRotation(koebiten.Rotation0)
 				game := flappygopher.NewGame()
 				if err := koebiten.RunGame(game); err != nil {
 					log.Fatal(err)
@@ -26,7 +26,7 @@ func main() {
 		{
 			Title: "Blocks",
 			Game: func() {
-				koebiten.SetRotate(koebiten.Rotation90)
+				koebiten.SetRotation(koebiten.Rotation90)
 				game := blocks.NewGame()
 				if err := koebiten.RunGame(game); err != nil {
 					log.Fatal(err)
@@ -36,7 +36,7 @@ func main() {
 		{
 			Title: "Jumpin Gopher",
 			Game: func() {
-				koebiten.SetRotate(koebiten.Rotation0)
+				koebiten.SetRotation(koebiten.Rotation0)
 				game := jumpingopher.NewGame()
 				if err := koebiten.RunGame(game); err != nil {
 					log.Fatal(err)
@@ -46,7 +46,7 @@ func main() {
 	})
 
 	for {
-		koebiten.SetRotate(0)
+		koebiten.SetRotation(0)
 		if err := koebiten.RunGame(menu); err != nil {
 			log.Fatal(err)
 		}

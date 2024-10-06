@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	koebiten.SetRotate(koebiten.Rotation90)
+	koebiten.SetRotation(koebiten.Rotation90)
 	koebiten.SetWindowSize(64, 128)
 	koebiten.SetWindowTitle("Tetris in Go")
 

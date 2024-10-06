@@ -102,7 +102,10 @@ func SetWindowSize(w, h int) {
 func SetWindowTitle(title string) {
 }
 
-func SetRotate(mode int) {
+// SetRotation sets the display rotation mode.
+// If the display is already a RotatedDisplay, it updates the mode.
+// Otherwise, it wraps the existing display in a new RotatedDisplay with the specified mode.
+func SetRotation(mode int) {
 	d, ok := display.(*RotatedDisplay)
 	if ok {
 		d.mode = mode
