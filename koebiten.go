@@ -66,6 +66,7 @@ func Run(d func()) error {
 	for {
 		<-tick
 		keyUpdate()
+		theInputState.update()
 		textY = 0
 		display.ClearBuffer()
 		d()
@@ -79,6 +80,7 @@ func RunGame(game Game) error {
 	for {
 		<-tick
 		keyUpdate()
+		theInputState.update()
 		textY = 0
 		display.ClearBuffer()
 		err := game.Update()

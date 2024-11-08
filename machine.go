@@ -157,11 +157,9 @@ func keyGpioUpdate() {
 			}
 		case NoneToPress:
 			state[idx] = Press
-			theInputState.keyDurations[idx]++
 			AppendJustPressedKeys([]Key{Key(idx)})
 		case Press:
 			AppendPressedKeys([]Key{Key(idx)})
-			theInputState.keyDurations[idx]++
 			if current {
 				cycle[idx] = 0
 				duration[idx]++
@@ -177,7 +175,6 @@ func keyGpioUpdate() {
 		case PressToRelease:
 			state[idx] = None
 			AppendJustReleasedKeys([]Key{Key(idx)})
-			theInputState.keyDurations[idx] = 0
 		}
 	}
 }
@@ -207,11 +204,9 @@ func keyRotaryUpdate() {
 			} else {
 				state[idx] = PressToRelease
 			}
-			theInputState.keyDurations[idx]++
 			AppendJustPressedKeys([]Key{Key(idx)})
 		case Press:
 			AppendPressedKeys([]Key{Key(idx)})
-			theInputState.keyDurations[idx]++
 			if current {
 			} else {
 				state[idx] = PressToRelease
@@ -223,7 +218,6 @@ func keyRotaryUpdate() {
 				state[idx] = None
 			}
 			AppendJustReleasedKeys([]Key{Key(idx)})
-			theInputState.keyDurations[idx] = 0
 		}
 	}
 }
@@ -250,11 +244,9 @@ func keyMatrixUpdate() {
 				}
 			case NoneToPress:
 				state[idx] = Press
-				theInputState.keyDurations[idx]++
 				AppendJustPressedKeys([]Key{Key(idx)})
 			case Press:
 				AppendPressedKeys([]Key{Key(idx)})
-				theInputState.keyDurations[idx]++
 				if current {
 					cycle[idx] = 0
 					duration[idx]++
@@ -270,7 +262,6 @@ func keyMatrixUpdate() {
 			case PressToRelease:
 				state[idx] = None
 				AppendJustReleasedKeys([]Key{Key(idx)})
-				theInputState.keyDurations[idx] = 0
 			}
 
 			colPins[c].Low()
@@ -298,11 +289,9 @@ func keyJoystickUpdate() {
 			}
 		case NoneToPress:
 			state[idx] = Press
-			theInputState.keyDurations[idx]++
 			AppendJustPressedKeys([]Key{Key(idx)})
 		case Press:
 			AppendPressedKeys([]Key{Key(idx)})
-			theInputState.keyDurations[idx]++
 			if current {
 				cycle[idx] = 0
 				duration[idx]++
@@ -318,7 +307,6 @@ func keyJoystickUpdate() {
 		case PressToRelease:
 			state[idx] = None
 			AppendJustReleasedKeys([]Key{Key(idx)})
-			theInputState.keyDurations[idx] = 0
 		}
 	}
 }

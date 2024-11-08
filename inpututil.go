@@ -1,6 +1,8 @@
 package koebiten
 
-import "sync"
+import (
+	"sync"
+)
 
 type Key int
 
@@ -39,6 +41,7 @@ type pos struct {
 type inputState struct {
 	keyDurations     []int
 	prevKeyDurations []int
+	state            []bool
 
 	m sync.RWMutex
 }
@@ -46,11 +49,24 @@ type inputState struct {
 var theInputState = &inputState{
 	keyDurations:     make([]int, KeyMax+1),
 	prevKeyDurations: make([]int, KeyMax+1),
+	state:            make([]bool, KeyMax+1),
 }
+
+var isKeyPressed = make([]bool, KeyMax)
 
 func (i *inputState) update() {
 	i.m.Lock()
 	defer i.m.Unlock()
+
+	// Keyboard
+	copy(i.prevKeyDurations, i.keyDurations)
+	for k := Key(0); k <= KeyMax; k++ {
+		if i.state[k] {
+			i.keyDurations[k]++
+		} else {
+			i.keyDurations[k] = 0
+		}
+	}
 }
 
 // AppendPressedKeys append currently pressed keyboard keys to keys and returns the extended buffer.
@@ -60,8 +76,12 @@ func (i *inputState) update() {
 //
 // AppendPressedKeys is concurrent safe.
 func AppendPressedKeys(keys []Key) []Key {
-	theInputState.m.RLock()
-	defer theInputState.m.RUnlock()
+	theInputState.m.Lock()
+	defer theInputState.m.Unlock()
+
+	for _, k := range keys {
+		theInputState.state[k] = true
+	}
 
 	for i, d := range theInputState.keyDurations {
 		if d == 0 {
@@ -88,8 +108,12 @@ func PressedKeys() []Key {
 //
 // AppendJustPressedKeys is concurrent safe.
 func AppendJustPressedKeys(keys []Key) []Key {
-	theInputState.m.RLock()
-	defer theInputState.m.RUnlock()
+	theInputState.m.Lock()
+	defer theInputState.m.Unlock()
+
+	for _, k := range keys {
+		theInputState.state[k] = true
+	}
 
 	for i, d := range theInputState.keyDurations {
 		if d != 1 {
@@ -107,8 +131,12 @@ func AppendJustPressedKeys(keys []Key) []Key {
 //
 // AppendJustReleasedKeys is concurrent safe.
 func AppendJustReleasedKeys(keys []Key) []Key {
-	theInputState.m.RLock()
-	defer theInputState.m.RUnlock()
+	theInputState.m.Lock()
+	defer theInputState.m.Unlock()
+
+	for _, k := range keys {
+		theInputState.state[k] = false
+	}
 
 	for k := Key(0); k <= KeyMax; k++ {
 		if theInputState.keyDurations[k] != 0 {
