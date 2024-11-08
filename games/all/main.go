@@ -7,9 +7,12 @@ import (
 	"github.com/sago35/koebiten/games/blocks/blocks"
 	"github.com/sago35/koebiten/games/flappygopher/flappygopher"
 	"github.com/sago35/koebiten/games/jumpingopher/jumpingopher"
+	"github.com/sago35/koebiten/hardware"
 )
 
 func main() {
+	koebiten.SetHardware(hardware.Device)
+
 	menu := NewMenu()
 
 	menu.AddGames([]Game{

@@ -5,9 +5,11 @@ import (
 
 	"github.com/sago35/koebiten"
 	"github.com/sago35/koebiten/games/blocks/blocks"
+	"github.com/sago35/koebiten/hardware"
 )
 
 func main() {
+	koebiten.SetHardware(hardware.Device)
 	koebiten.SetRotation(koebiten.Rotation90)
 	koebiten.SetWindowSize(64, 128)
 	koebiten.SetWindowTitle("Tetris in Go")

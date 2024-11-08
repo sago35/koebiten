@@ -1,13 +1,35 @@
-//go:build tinygo && !macropad_rp2040
+//go:build tinygo
 
-package koebiten
+package hardware
 
 import (
 	"machine"
 
+	"github.com/sago35/koebiten"
 	"tinygo.org/x/drivers"
 	"tinygo.org/x/drivers/encoders"
 	"tinygo.org/x/drivers/ssd1306"
+)
+
+var Device = ZERO_KB02{}
+
+type ZERO_KB02 struct {
+}
+
+func (z ZERO_KB02) Init() error {
+	return Init()
+}
+
+func (z ZERO_KB02) GetDisplay() koebiten.Displayer {
+	return Display
+}
+
+func (z ZERO_KB02) KeyUpdate() error {
+	return keyUpdate()
+}
+
+var (
+	Display *ssd1306.Device
 )
 
 var (
@@ -46,7 +68,7 @@ func (a ADCDevice) Get() bool {
 	return a.PressedFunc()
 }
 
-func init() {
+func Init() error {
 	machine.InitADC()
 	ax := machine.ADC{Pin: machine.GPIO29}
 	ay := machine.ADC{Pin: machine.GPIO28}
@@ -75,7 +97,7 @@ func init() {
 	})
 	d.SetRotation(drivers.Rotation180)
 	d.ClearDisplay()
-	display = &d
+	Display = &d
 
 	gpioPins = []machine.Pin{
 		machine.GPIO2, // rotary
@@ -129,13 +151,15 @@ func init() {
 	cycle = make([]int, len(colPins)*len(rowPins)+len(gpioPins)+len(rotaryPins)+len(adcPins))
 	duration = make([]int, len(colPins)*len(rowPins)+len(gpioPins)+len(rotaryPins)+len(adcPins))
 
+	return nil
 }
 
-func keyUpdate() {
+func keyUpdate() error {
 	keyGpioUpdate()
 	keyRotaryUpdate()
 	keyMatrixUpdate()
 	keyJoystickUpdate()
+	return nil
 }
 
 func keyGpioUpdate() {
@@ -157,9 +181,9 @@ func keyGpioUpdate() {
 			}
 		case NoneToPress:
 			state[idx] = Press
-			AppendJustPressedKeys([]Key{Key(idx)})
+			koebiten.AppendJustPressedKeys([]koebiten.Key{koebiten.Key(idx)})
 		case Press:
-			AppendPressedKeys([]Key{Key(idx)})
+			koebiten.AppendPressedKeys([]koebiten.Key{koebiten.Key(idx)})
 			if current {
 				cycle[idx] = 0
 				duration[idx]++
@@ -174,7 +198,7 @@ func keyGpioUpdate() {
 			}
 		case PressToRelease:
 			state[idx] = None
-			AppendJustReleasedKeys([]Key{Key(idx)})
+			koebiten.AppendJustReleasedKeys([]koebiten.Key{koebiten.Key(idx)})
 		}
 	}
 }
@@ -204,9 +228,9 @@ func keyRotaryUpdate() {
 			} else {
 				state[idx] = PressToRelease
 			}
-			AppendJustPressedKeys([]Key{Key(idx)})
+			koebiten.AppendJustPressedKeys([]koebiten.Key{koebiten.Key(idx)})
 		case Press:
-			AppendPressedKeys([]Key{Key(idx)})
+			koebiten.AppendPressedKeys([]koebiten.Key{koebiten.Key(idx)})
 			if current {
 			} else {
 				state[idx] = PressToRelease
@@ -217,7 +241,7 @@ func keyRotaryUpdate() {
 			} else {
 				state[idx] = None
 			}
-			AppendJustReleasedKeys([]Key{Key(idx)})
+			koebiten.AppendJustReleasedKeys([]koebiten.Key{koebiten.Key(idx)})
 		}
 	}
 }
@@ -244,9 +268,9 @@ func keyMatrixUpdate() {
 				}
 			case NoneToPress:
 				state[idx] = Press
-				AppendJustPressedKeys([]Key{Key(idx)})
+				koebiten.AppendJustPressedKeys([]koebiten.Key{koebiten.Key(idx)})
 			case Press:
-				AppendPressedKeys([]Key{Key(idx)})
+				koebiten.AppendPressedKeys([]koebiten.Key{koebiten.Key(idx)})
 				if current {
 					cycle[idx] = 0
 					duration[idx]++
@@ -261,7 +285,7 @@ func keyMatrixUpdate() {
 				}
 			case PressToRelease:
 				state[idx] = None
-				AppendJustReleasedKeys([]Key{Key(idx)})
+				koebiten.AppendJustReleasedKeys([]koebiten.Key{koebiten.Key(idx)})
 			}
 
 			colPins[c].Low()
@@ -289,9 +313,9 @@ func keyJoystickUpdate() {
 			}
 		case NoneToPress:
 			state[idx] = Press
-			AppendJustPressedKeys([]Key{Key(idx)})
+			koebiten.AppendJustPressedKeys([]koebiten.Key{koebiten.Key(idx)})
 		case Press:
-			AppendPressedKeys([]Key{Key(idx)})
+			koebiten.AppendPressedKeys([]koebiten.Key{koebiten.Key(idx)})
 			if current {
 				cycle[idx] = 0
 				duration[idx]++
@@ -306,7 +330,7 @@ func keyJoystickUpdate() {
 			}
 		case PressToRelease:
 			state[idx] = None
-			AppendJustReleasedKeys([]Key{Key(idx)})
+			koebiten.AppendJustReleasedKeys([]koebiten.Key{koebiten.Key(idx)})
 		}
 	}
 }

@@ -56,6 +56,8 @@ var (
 	black = color.RGBA{R: 0x00, G: 0x00, B: 0x00, A: 0xFF}
 )
 
+var keyUpdate = func() error { return nil }
+
 func init() {
 	pngBuffer = map[string]pixel.Image[pixel.Monochrome]{}
 }
@@ -102,6 +104,16 @@ func SetWindowSize(w, h int) {
 
 // SetWindowTitle sets the title of the display window.
 func SetWindowTitle(title string) {
+}
+
+func SetHardware(h Hardware) error {
+	err := h.Init()
+	if err != nil {
+		return err
+	}
+	display = h.GetDisplay()
+	keyUpdate = h.KeyUpdate
+	return nil
 }
 
 // SetRotation sets the display rotation mode.
