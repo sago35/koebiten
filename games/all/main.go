@@ -80,7 +80,7 @@ func (m *Menu) Update() error {
 		m.index = (m.index + 1) % len(m.games)
 	} else if koebiten.IsKeyJustPressed(koebiten.KeyUp) {
 		m.index = (m.index - 1 + len(m.games)) % len(m.games)
-	} else if koebiten.IsKeyJustPressed(koebiten.Key11) {
+	} else if koebiten.IsKeyJustPressed(koebiten.Key11) || koebiten.IsKeyJustPressed(koebiten.Key0) {
 		return koebiten.Termination
 	}
 	return nil
