@@ -101,6 +101,9 @@ func (z *device) GetDisplay() koebiten.Displayer {
 func (z *device) KeyUpdate() error {
 	for r := range z.gpioPins {
 		current := !z.gpioPins[r].Get()
+		if z.gpioPins[r] == machine.NoPin {
+			current = false
+		}
 		idx := r
 
 		switch z.state[idx] {
