@@ -9,6 +9,7 @@ import (
 	"github.com/sago35/koebiten"
 	"tinygo.org/x/drivers/pixel"
 	"tinygo.org/x/drivers/st7789"
+	"tinygo.org/x/tinydraw"
 )
 
 var Device = &device{}
@@ -35,7 +36,7 @@ const (
 
 func (z *device) Init() error {
 	machine.SPI0.Configure(machine.SPIConfig{
-		Frequency: 8000000,
+		Frequency: 32 * machine.MHz,
 		Mode:      0,
 	})
 
@@ -142,11 +143,17 @@ type Display struct {
 	img pixel.Image[pixel.RGB565BE]
 }
 
-func InitDisplay(d *st7789.Device, width, height int) *Display {
-	return &Display{
-		d:   d,
-		img: pixel.NewImage[pixel.RGB565BE](int(width), int(height)),
+func InitDisplay(dev *st7789.Device, width, height int) *Display {
+	d := &Display{
+		d:   dev,
+		img: pixel.NewImage[pixel.RGB565BE](width*2+1, height*2+1),
 	}
+
+	ox, oy := d.getImageTopLeftForCentering()
+	w, h := d.img.Size()
+	tinydraw.Rectangle(dev, ox-1, oy-1, int16(w)+2, int16(h)+2, white)
+
+	return d
 }
 
 func (d *Display) Size() (x, y int16) {
@@ -154,9 +161,12 @@ func (d *Display) Size() (x, y int16) {
 }
 
 func (d *Display) SetPixel(x, y int16, c color.RGBA) {
-	mx, my := d.img.Size()
+	mx, my := d.Size()
 	if 0 <= x && x < int16(mx) && 0 <= y && y < int16(my) {
-		d.img.Set(int(x), int(y), pixelWhite)
+		d.img.Set(int(x*2+0), int(y*2+0), pixelWhite)
+		d.img.Set(int(x*2+1), int(y*2+0), pixelWhite)
+		d.img.Set(int(x*2+0), int(y*2+1), pixelWhite)
+		d.img.Set(int(x*2+1), int(y*2+1), pixelWhite)
 	}
 	return
 	cnt := 0
@@ -178,8 +188,8 @@ func (d *Display) SetPixel(x, y int16, c color.RGBA) {
 }
 
 func (d *Display) Display() error {
-	return d.d.DrawBitmap(0, 0, d.img)
-	//return d.d.Display()
+	ox, oy := d.getImageTopLeftForCentering()
+	return d.d.DrawBitmap(int16(ox), int16(oy), d.img)
 }
 
 func (d *Display) ClearBuffer() {
@@ -187,6 +197,13 @@ func (d *Display) ClearBuffer() {
 }
 
 func (d *Display) ClearDisplay() {
+}
+
+func (d *Display) getImageTopLeftForCentering() (int16, int16) {
+	mx, my := d.img.Size()
+	ox := (320 - mx) / 2
+	oy := (240 - my) / 2
+	return int16(ox), int16(oy)
 }
 
 var (
