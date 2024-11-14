@@ -11,8 +11,6 @@ Since then, additional features have been inspired by Miniten's foundation, Ebit
 
 ## games/flappygopher
 
-### run with koebiten
-
 ![](./images/flappygopher.jpg)
 
 For now, koebiten only works on [zero-kb02](https://github.com/sago35/keyboards) and [macropad-rp2040](https://learn.adafruit.com/adafruit-macropad-rp2040). It needs some improvements to run in a more general environment.  
@@ -23,8 +21,6 @@ $ tinygo flash --target gopher-badge --size short ./games/flappygopher
 ```
 
 ## games/jumpingopher
-
-### run with koebiten
 
 ![](./images/jumpingopher.jpg)
 
@@ -41,8 +37,20 @@ The other games are located under [./games](./games).
 
 Refer to the [Makefile](./Makefile) for instructions on how to build.
 
+# hardware
 
-# Add new hardware
+The currently supported hardware is as follows.
+
+* zero-kb02 (--target ./targets/zero-kb02.json)
+    * https://github.com/sago35/keyboards
+* gopher-badge
+    * https://gopherbadge.com/
+* pybadge / gobadge
+    * https://learn.adafruit.com/adafruit-pybadge
+* macropad-rp2040
+    * https://learn.adafruit.com/adafruit-macropad-rp2040
+
+## Add new hardware
 
 When adding new hardware, please refer to [#7](https://github.com/sago35/koebiten/pull/7).
 If the hardware you're adding is not a simple, off-the-shelf product like zero-kb02,
