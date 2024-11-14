@@ -1,4 +1,4 @@
-//go:build tinygo && !(macropad_rp2040 || gopher_badge)
+//go:build tinygo && zero_kb02
 
 package hardware
 
