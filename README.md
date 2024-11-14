@@ -39,6 +39,9 @@ more info : [./games/jumpingopher](./games/jumpingopher)
 
 The other games are located under [./games](./games).
 
+Refer to the [Makefile](./Makefile) for instructions on how to build.
+
+
 # Add new hardware
 
 When adding new hardware, please refer to [#7](https://github.com/sago35/koebiten/pull/7).
