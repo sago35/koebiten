@@ -47,6 +47,8 @@ The currently supported hardware is as follows.
     * https://gopherbadge.com/
 * pybadge / gobadge
     * https://learn.adafruit.com/adafruit-pybadge
+* wioterminal
+    * https://www.seeedstudio.com/Wio-Terminal-p-4509.html
 * macropad-rp2040
     * https://learn.adafruit.com/adafruit-macropad-rp2040
 
