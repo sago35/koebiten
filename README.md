@@ -51,6 +51,8 @@ The currently supported hardware is as follows.
     * https://www.seeedstudio.com/Wio-Terminal-p-4509.html
 * macropad-rp2040
     * https://learn.adafruit.com/adafruit-macropad-rp2040
+* gopher-board
+  * https://github.com/sat0ken/gopher-board/tree/main/rp2040/v2
 
 ## Add new hardware
 
