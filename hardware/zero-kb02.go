@@ -76,10 +76,10 @@ func Init() error {
 	ay.Configure(machine.ADCConfig{})
 
 	adcPins = []ADCDevice{
-		{ADC: ax, PressedFunc: func() bool { return ax.Get() < 0x6000 }}, // left
-		{ADC: ax, PressedFunc: func() bool { return 0xA000 < ax.Get() }}, // right
-		{ADC: ay, PressedFunc: func() bool { return 0xA000 < ay.Get() }}, // up
-		{ADC: ay, PressedFunc: func() bool { return ay.Get() < 0x6000 }}, // down
+		{ADC: ax, PressedFunc: func() bool { return ax.Get() < 0x4800 }}, // left
+		{ADC: ax, PressedFunc: func() bool { return 0xB800 < ax.Get() }}, // right
+		{ADC: ay, PressedFunc: func() bool { return 0xB800 < ay.Get() }}, // up
+		{ADC: ay, PressedFunc: func() bool { return ay.Get() < 0x4800 }}, // down
 	}
 
 	i2c := machine.I2C0
