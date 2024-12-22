@@ -61,11 +61,11 @@ func NewGame() *Menu {
 }
 
 func (m *Menu) Update() error {
-	if koebiten.IsKeyJustPressed(koebiten.KeyDown) {
+	if koebiten.IsKeyJustPressed(koebiten.KeyDown) || koebiten.IsKeyJustPressed(koebiten.KeyRotaryRight) {
 		m.index = (m.index + 1) % len(m.games)
-	} else if koebiten.IsKeyJustPressed(koebiten.KeyUp) {
+	} else if koebiten.IsKeyJustPressed(koebiten.KeyUp) || koebiten.IsKeyJustPressed(koebiten.KeyRotaryLeft) {
 		m.index = (m.index - 1 + len(m.games)) % len(m.games)
-	} else if koebiten.IsKeyJustPressed(koebiten.Key11) || koebiten.IsKeyJustPressed(koebiten.Key0) {
+	} else if len(koebiten.AppendJustPressedKeys(nil)) > 0 {
 		return koebiten.Termination
 	}
 	return nil
