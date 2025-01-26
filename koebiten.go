@@ -64,7 +64,7 @@ func init() {
 
 // Run starts the main loop for the application.
 func Run(d func()) error {
-	tick := time.Tick(32 * time.Millisecond)
+	tick := time.Tick(320 * time.Millisecond)
 	for {
 		<-tick
 		keyUpdate()
@@ -78,7 +78,7 @@ func Run(d func()) error {
 }
 
 func RunGame(game Game) error {
-	tick := time.Tick(32 * time.Millisecond)
+	tick := time.Tick(320 * time.Millisecond)
 	for {
 		<-tick
 		keyUpdate()
