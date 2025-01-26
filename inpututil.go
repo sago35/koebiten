@@ -33,6 +33,13 @@ const (
 	KeyDown
 )
 
+const (
+	KeyArrowLeft  = KeyLeft
+	KeyArrowRight = KeyRight
+	KeyArrowUp    = KeyUp
+	KeyArrowDown  = KeyDown
+)
+
 type pos struct {
 	x int
 	y int
@@ -158,6 +165,10 @@ func AppendJustReleasedKeys(keys []Key) []Key {
 // IsKeyJustPressed is concurrent safe.
 func IsKeyJustPressed(key Key) bool {
 	return KeyPressDuration(key) == 1
+}
+
+func IsKeyPressed(key Key) bool {
+	return KeyPressDuration(key) > 0
 }
 
 // IsKeyJustReleased returns a boolean value indicating
