@@ -43,7 +43,7 @@ func (z *device) GetDisplay() koebiten.Displayer {
 
 func (z *device) Init() error {
 	machine.SPI1.Configure(machine.SPIConfig{
-		Frequency: 8000000,
+		Frequency: 16000000,
 		Mode:      0,
 	})
 
@@ -54,21 +54,20 @@ func (z *device) Init() error {
 		machine.GPIO14) // TFT_LITE
 
 	d.Configure(st7789.Config{
-		//Rotation: st7789.ROTATION_270,
-		Height: 240,
-		Width:  240,
+		Rotation: st7789.ROTATION_90,
+		Height:   240,
+		Width:    240,
 	})
 	d.FillRectangle(0, 0, 240, 240, black)
-
 	z.display = InitDisplay(&d, 100, 64)
 
 	gpioPins = []machine.Pin{
-		machine.GPIO4,  // up
-		machine.GPIO5,  // left
+		machine.GPIO3,  // up
+		machine.GPIO4,  // left
 		machine.GPIO6,  // down
-		machine.GPIO7,  // right
-		machine.GPIO27, // A
-		machine.GPIO28, // B
+		machine.GPIO5,  // right
+		machine.GPIO26, // A
+		machine.GPIO15, // B
 	}
 
 	for _, p := range gpioPins {
@@ -76,12 +75,12 @@ func (z *device) Init() error {
 	}
 
 	z.gpioPins = []machine.Pin{
-		machine.GPIO27,
-		machine.GPIO28,
-		machine.GPIO5,
-		machine.GPIO7,
-		machine.GPIO4,
-		machine.GPIO6,
+		machine.GPIO3,  // up
+		machine.GPIO4,  // left
+		machine.GPIO6,  // down
+		machine.GPIO5,  // right
+		machine.GPIO26, // A
+		machine.GPIO15, // B
 	}
 
 	z.state = make([]State, len(z.gpioPins))
