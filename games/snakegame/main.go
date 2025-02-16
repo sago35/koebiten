@@ -24,7 +24,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	koebiten.SetHardware(hardware.Device)
 	koebiten.SetWindowSize(128, 64)
-	koebiten.SetWindowTitle("Snake Gmae")
+	koebiten.SetWindowTitle("Snake Game")
 
 	game := snakegame.NewGame()
 	koebiten.RunGame(game)
