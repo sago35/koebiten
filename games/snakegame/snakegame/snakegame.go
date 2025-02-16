@@ -66,7 +66,6 @@ func (g *Game) spawnFood() {
 func (g *Game) Update() error {
 	if g.state == StateOpening || g.state == StateGameOver {
 		if isAnyKeyJustPressed() {
-			g.state = StatePlaying
 			g.Init()
 			g.state = StatePlaying
 		}
@@ -105,7 +104,7 @@ func (g *Game) Update() error {
 		if g.dir.x == 1 {
 			g.pendingDir = Point{0, -1}
 		} else if g.dir.y == 1 {
-
+			g.pendingDir = Point{1, 0}
 		} else if g.dir.x == -1 {
 			g.pendingDir = Point{0, 1}
 		} else if g.dir.y == -1 {
