@@ -7,6 +7,7 @@ import (
 	"github.com/sago35/koebiten/games/blocks/blocks"
 	"github.com/sago35/koebiten/games/flappygopher/flappygopher"
 	"github.com/sago35/koebiten/games/jumpingopher/jumpingopher"
+	"github.com/sago35/koebiten/games/snakegame/snakegame"
 )
 
 type Game struct {
@@ -50,6 +51,16 @@ func NewGame() *Menu {
 			Game: func() {
 				koebiten.SetRotation(koebiten.Rotation0)
 				game := jumpingopher.NewGame()
+				if err := koebiten.RunGame(game); err != nil {
+					log.Fatal(err)
+				}
+			},
+		},
+		{
+			Title: "Snake Game",
+			Game: func() {
+				koebiten.SetRotation(koebiten.Rotation0)
+				game := snakegame.NewGame()
 				if err := koebiten.RunGame(game); err != nil {
 					log.Fatal(err)
 				}
