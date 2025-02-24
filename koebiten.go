@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"image/color"
 	"io/fs"
+	"math"
 	"reflect"
 	"strings"
 	"time"
@@ -224,8 +225,19 @@ var (
 	pngBuffer map[string]pixel.Image[pixel.Monochrome]
 )
 
+type DrawImageFSOptions struct {
+	GeoM GeoM
+}
+
 // DrawImageFS draws an image from the filesystem onto the display.
 func DrawImageFS(dst Displayer, fsys fs.FS, path string, x, y int) {
+	op := DrawImageFSOptions{}
+	op.GeoM.Translate(float64(x), float64(y))
+	DrawImageFSWithOptions(dst, fsys, path, op)
+}
+
+// DrawImageFSWithOptions draws an image from the filesystem onto the display with options.
+func DrawImageFSWithOptions(dst Displayer, fsys fs.FS, path string, options DrawImageFSOptions) {
 	if isNil(dst) {
 		dst = display
 	}
@@ -268,11 +280,18 @@ func DrawImageFS(dst Displayer, fsys fs.FS, path string, x, y int) {
 		pngBuffer[path] = img
 	}
 
+	geoM := options.GeoM
+	a, b, c, d, tx, ty := geoM.elements32()
+	det := a*d - b*c
+	if det == 0 {
+		return
+	}
+
 	w, h := img.Size()
 	for yy := 0; yy < h; yy++ {
 		for xx := 0; xx < w; xx++ {
 			if img.Get(xx, yy) == true {
-				dst.SetPixel(int16(x)+int16(xx), int16(y)+int16(yy), white)
+				dst.SetPixel(int16(math.Round(float64(a*float32(xx)+b*float32(yy)+tx))), int16(math.Round(float64(c*float32(xx)+d*float32(yy)+ty))), white)
 			}
 		}
 	}
