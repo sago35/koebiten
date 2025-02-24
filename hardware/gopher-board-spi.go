@@ -75,12 +75,26 @@ func (z *device) Init() error {
 	}
 
 	z.gpioPins = []machine.Pin{
-		machine.GPIO3,  // up
-		machine.GPIO4,  // left
-		machine.GPIO6,  // down
-		machine.GPIO5,  // right
 		machine.GPIO26, // A
 		machine.GPIO15, // B
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.NoPin,
+		machine.GPIO4, // left
+		machine.GPIO5, // right
+		machine.GPIO3, // up
+		machine.GPIO6, // down
 	}
 
 	z.state = make([]State, len(z.gpioPins))
