@@ -236,7 +236,7 @@ func DrawImageFS(dst Displayer, fsys fs.FS, path string, x, y int) {
 	DrawImageFSWithOptions(dst, fsys, path, op)
 }
 
-// DrawImageFS draws an image from the filesystem onto the display.
+// DrawImageFSWithOptions draws an image from the filesystem onto the display with options.
 func DrawImageFSWithOptions(dst Displayer, fsys fs.FS, path string, options DrawImageFSOptions) {
 	if isNil(dst) {
 		dst = display

@@ -47,6 +47,8 @@ func (g *Game) Update() error {
 	dx := 1
 	dy := 1
 
+	// rotary buttonを回すとgopherが回転する
+	// キーボードを押しながら回すと拡大縮小する
 	if koebiten.IsKeyPressed(koebiten.KeyRotaryRight) {
 		if isAnyKeyboardKeyPressed() {
 			g.scale += ds
@@ -62,6 +64,7 @@ func (g *Game) Update() error {
 		}
 	}
 
+	// joystickを倒すとgopherが移動する
 	if koebiten.IsKeyPressed(koebiten.KeyArrowRight) {
 		g.x += dx
 	}
@@ -92,6 +95,9 @@ func (g *Game) Draw(screen *koebiten.Image) {
 	koebiten.DrawImageFSWithOptions(nil, fsys, "gopher.png", op)
 }
 
+// isAnyKeyboardKeyPressed returns true if any keyboard key is pressed
+//
+// keyboard key are koebiten.Key0 to koebiten.Key11
 func isAnyKeyboardKeyPressed() bool {
 	return slices.ContainsFunc(koebiten.AppendPressedKeys(nil), func(k koebiten.Key) bool {
 		switch k {
