@@ -8,7 +8,6 @@ import (
 	"image/color"
 	"io/fs"
 	"math"
-	"reflect"
 	"strings"
 	"time"
 
@@ -18,26 +17,6 @@ import (
 	"tinygo.org/x/tinydraw"
 	"tinygo.org/x/tinyfont"
 )
-
-type Image struct {
-}
-
-func (i *Image) Size() (x, y int16) {
-	return 0, 0
-}
-
-func (i *Image) SetPixel(x, y int16, c color.RGBA) {
-}
-
-func (i *Image) Display() error {
-	return nil
-}
-
-func (i *Image) ClearDisplay() {
-}
-
-func (i *Image) ClearBuffer() {
-}
 
 // Displayer interface for display operations.
 type Displayer interface {
@@ -281,9 +260,7 @@ func DrawImageFSWithOptions(dst Displayer, fsys fs.FS, path string, options Draw
 	}
 
 	geoM := options.GeoM
-	a, b, c, d, tx, ty := geoM.elements32()
-	det := a*d - b*c
-	if det == 0 {
+	if !geoM.IsInvertible() {
 		return
 	}
 
@@ -291,12 +268,9 @@ func DrawImageFSWithOptions(dst Displayer, fsys fs.FS, path string, options Draw
 	for yy := 0; yy < h; yy++ {
 		for xx := 0; xx < w; xx++ {
 			if img.Get(xx, yy) == true {
-				dst.SetPixel(int16(math.Round(float64(a*float32(xx)+b*float32(yy)+tx))), int16(math.Round(float64(c*float32(xx)+d*float32(yy)+ty))), white)
+				xxf, yyf := geoM.Apply(float64(xx), float64(yy))
+				dst.SetPixel(int16(math.Round(float64(xxf))), int16(math.Round(float64(yyf))), white)
 			}
 		}
 	}
-}
-
-func isNil(d Displayer) bool {
-	return d == nil || (reflect.ValueOf(d).Kind() == reflect.Ptr && reflect.ValueOf(d).IsNil())
 }
