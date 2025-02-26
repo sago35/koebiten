@@ -16,7 +16,7 @@ var _ Displayer = (*Image)(nil)
 //
 // Image implements the Displayer interface.
 type Image struct {
-	img *pixel.Image[pixel.Monochrome]
+	img pixel.Image[pixel.Monochrome]
 }
 
 // Size returns the width and height of the image.
@@ -54,9 +54,8 @@ func (i *Image) ClearBuffer() {}
 //
 // It returns a pointer to the new Image.
 func NewImage(width, height int16) *Image {
-	img := pixel.NewImage[pixel.Monochrome](int(width), int(height))
 	return &Image{
-		img: &img,
+		img: pixel.NewImage[pixel.Monochrome](int(width), int(height)),
 	}
 }
 
@@ -70,11 +69,11 @@ func NewImageFromFS(fsys fs.FS, path string) *Image {
 }
 
 // loadImageFromFS loads an image from the filesystem.
-func loadImageFromFS(fsys fs.FS, path string) (*pixel.Image[pixel.Monochrome], error) {
+func loadImageFromFS(fsys fs.FS, path string) (pixel.Image[pixel.Monochrome], error) {
 	var buffer [3 * 8 * 8 * 4]uint16
 	p, err := fsys.Open(path)
 	if err != nil {
-		return nil, err
+		return pixel.Image[pixel.Monochrome]{}, err
 	}
 
 	var img pixel.Image[pixel.Monochrome]
@@ -104,10 +103,10 @@ func loadImageFromFS(fsys fs.FS, path string) (*pixel.Image[pixel.Monochrome], e
 	})
 
 	if _, err = png.Decode(p); err != nil {
-		return nil, err
+		return pixel.Image[pixel.Monochrome]{}, err
 	}
 
-	return &img, nil
+	return img, nil
 }
 
 // Fill fills the image with the given color.
