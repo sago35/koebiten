@@ -20,10 +20,10 @@ const (
 )
 
 type Game struct {
-	x, y int
-
-	scale float64
-	theta float64
+	gopher *koebiten.Image
+	x, y   int
+	scale  float64
+	theta  float64
 }
 
 var (
@@ -33,9 +33,10 @@ var (
 
 func NewGame() *Game {
 	game := &Game{
-		x:     width / 2,
-		y:     height / 2,
-		scale: 1,
+		gopher: koebiten.NewImageFromFS(fsys, "gopher.png"),
+		x:      width / 2,
+		y:      height / 2,
+		scale:  1,
 	}
 	return game
 }
@@ -87,12 +88,12 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
 }
 
 func (g *Game) Draw(screen *koebiten.Image) {
-	op := koebiten.DrawImageFSOptions{}
+	op := koebiten.DrawImageOptions{}
 	op.GeoM.Translate(-float64(gopherWidth)/2, -float64(gopherHeight)/2)
 	op.GeoM.Scale(g.scale, g.scale)
 	op.GeoM.Rotate(g.theta)
 	op.GeoM.Translate(float64(g.x), float64(g.y))
-	koebiten.DrawImageFSWithOptions(nil, fsys, "gopher.png", op)
+	g.gopher.DrawImage(screen, op)
 }
 
 // isAnyKeyboardKeyPressed returns true if any keyboard key is pressed
