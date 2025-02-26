@@ -8,6 +8,7 @@ import (
 	"image/color"
 	"io/fs"
 	"math"
+	"reflect"
 	"strings"
 	"time"
 
@@ -209,6 +210,8 @@ type DrawImageFSOptions struct {
 }
 
 // DrawImageFS draws an image from the filesystem onto the display.
+//
+// Deprecated: Use Image and Image.DrawImage instead.
 func DrawImageFS(dst Displayer, fsys fs.FS, path string, x, y int) {
 	op := DrawImageFSOptions{}
 	op.GeoM.Translate(float64(x), float64(y))
@@ -216,6 +219,8 @@ func DrawImageFS(dst Displayer, fsys fs.FS, path string, x, y int) {
 }
 
 // DrawImageFSWithOptions draws an image from the filesystem onto the display with options.
+//
+// Deprecated: Use Image and Image.DrawImage instead.
 func DrawImageFSWithOptions(dst Displayer, fsys fs.FS, path string, options DrawImageFSOptions) {
 	if isNil(dst) {
 		dst = display
@@ -273,4 +278,8 @@ func DrawImageFSWithOptions(dst Displayer, fsys fs.FS, path string, options Draw
 			}
 		}
 	}
+}
+
+func isNil(d Displayer) bool {
+	return d == nil || (reflect.ValueOf(d).Kind() == reflect.Ptr && reflect.ValueOf(d).IsNil())
 }

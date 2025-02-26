@@ -4,7 +4,6 @@ import (
 	"image/color"
 	"io/fs"
 	"math"
-	"reflect"
 
 	"tinygo.org/x/drivers/image/png"
 	"tinygo.org/x/drivers/pixel"
@@ -145,8 +144,4 @@ func (i *Image) DrawImage(dst Displayer, options DrawImageOptions) {
 			}
 		}
 	}
-}
-
-func isNil(d Displayer) bool {
-	return d == nil || (reflect.ValueOf(d).Kind() == reflect.Ptr && reflect.ValueOf(d).IsNil())
 }
