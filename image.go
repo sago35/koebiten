@@ -28,9 +28,14 @@ func (i *Image) Size() (int16, int16) {
 
 // SetPixel sets the pixel at the given x and y coordinates to the given color.
 // The color is converted to a pixel.Monochrome color.
+// If the x and y coordinates are outside the image, the function does nothing.
 //
 // It implements the Displayer interface.
 func (i *Image) SetPixel(x, y int16, c color.RGBA) {
+	w, h := i.img.Size()
+	if x < 0 || x >= int16(w) || y < 0 || y >= int16(h) {
+		return
+	}
 	i.img.Set(int(x), int(y), pixel.NewMonochrome(c.R, c.G, c.B))
 }
 
