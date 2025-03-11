@@ -49,19 +49,20 @@ var (
 	g    = float32(0.05) // Gravity (重力加速度) の略
 	jump = float32(-1.0) // ジャンプ力
 
-	frames      = 0          // 経過フレーム数
-	interval    = 120        // 壁の追加間隔
-	intervalMin = 120        // 壁の追加間隔 (最小)
-	wallStartX  = 200        // 壁の初期X座標
-	walls       = []*wall{}  // 壁のX座標とY座標
-	wallsBuf    = [8]*wall{} // 壁の実態
-	wallWidth   = 7          // 壁の幅
-	wallHeight  = 128        // 壁の高さ
-	holeYMax    = 48         // 穴のY座標の最大値
-	holeHeight  = 40         // 穴のサイズ（高さ）
+	interval      = 100        // 壁の追加間隔
+	intervalMin   = 50         // 壁の追加間隔
+	intervalMax   = 100        // 壁の追加間隔
+	wallStartX    = 130        // 壁の初期X座標
+	walls         = []*wall{}  // 壁のX座標とY座標
+	wallsBuf      = [8]*wall{} // 壁の実態
+	wallWidth     = 7          // 壁の幅
+	wallHeight    = 128        // 壁の高さ
+	holeYMax      = 48         // 穴のY座標の最大値
+	holeHeight    = 45         // 穴のサイズ（高さ）
+	holeHeightMin = 40         // 穴のサイズ（高さ）
 
-	gopherWidth  = 20
-	gopherHeight = 25
+	gopherWidth  = 18
+	gopherHeight = 23
 
 	scene = "title"
 	score = 0
@@ -98,6 +99,12 @@ func drawGame() {
 	for _, wall := range walls {
 		if wall.wallX == int(x) {
 			score += 1
+
+			if score%5 == 0 {
+				if holeHeightMin <= holeHeight {
+					holeHeight -= 1
+				}
+			}
 		}
 	}
 	koebiten.Println("Score", score)
@@ -112,7 +119,7 @@ func drawGame() {
 	// 壁追加処理ここから
 	interval--
 	if interval == 0 {
-		interval = intervalMin
+		interval = intervalMin + rand.N(intervalMax-intervalMin)
 		walls = wallsBuf[:len(walls)+1]
 		walls[len(walls)-1].wallX = wallStartX
 		walls[len(walls)-1].holeY = rand.N(holeYMax)
@@ -179,27 +186,28 @@ func drawGame() {
 }
 
 func drawGameover() {
-	// 背景、gopher、壁の描画はdrawGame関数のコピペ
-	koebiten.DrawImageFS(nil, fsys, "sky.png", 0, 0)
-	koebiten.DrawImageFS(nil, fsys, "gopher.png", int(x), int(y))
+	if interval > 0 {
+		interval--
+		koebiten.DrawImageFS(nil, fsys, "sky.png", 0, 0)
+		koebiten.DrawImageFS(nil, fsys, "gopher.png", int(x), int(y))
 
-	for _, wall := range walls {
-		drawWalls(wall)
+		for _, wall := range walls {
+			drawWalls(wall)
+		}
 	}
 
 	koebiten.Println("Game Over")
 	koebiten.Println("Score", score)
 
-	if isAnyKeyJustPressed() {
+	if interval == 0 && isAnyKeyJustPressed() {
 		scene = "title"
 
 		x = 20.0
 		y = 30.0
 		vy = 0.0
-		frames = 0
-		walls = []*wall{}
+		walls = wallsBuf[:0]
 		score = 0
-		interval = intervalMin
+		interval = intervalMax
 	}
 }
 
