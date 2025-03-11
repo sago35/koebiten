@@ -42,11 +42,11 @@ type platform struct {
 }
 
 var (
-	x            = 50.0
-	y            = 30.0
-	vy           = 0.0
-	g            = 0.05
-	jump         = -1.0
+	x            = float32(50.0)
+	y            = float32(30.0)
+	vy           = float32(0.0)
+	g            = float32(0.05)
+	jump         = float32(-1.0)
 	frames       = 30
 	interval     = 120
 	cloudStartX  = 200

@@ -43,8 +43,8 @@ func NewGame() *Game {
 
 // Game update process
 func (g *Game) Update() error {
-	ds := 0.05
-	dt := 0.2
+	ds := float32(0.05)
+	dt := float32(0.2)
 	dx := 1
 	dy := 1
 
