@@ -39,11 +39,11 @@ type wall struct {
 }
 
 var (
-	x    = 20.0
-	y    = 30.0
-	vy   = 0.0  // Velocity of y (速度のy成分) の略
-	g    = 0.05 // Gravity (重力加速度) の略
-	jump = -1.0 // ジャンプ力
+	x    = float32(20.0)
+	y    = float32(30.0)
+	vy   = float32(0.0)  // Velocity of y (速度のy成分) の略
+	g    = float32(0.05) // Gravity (重力加速度) の略
+	jump = float32(-1.0) // ジャンプ力
 
 	frames     = 0         // 経過フレーム数
 	interval   = 120       // 壁の追加間隔

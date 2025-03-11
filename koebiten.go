@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"image/color"
 	"io/fs"
-	"math"
 	"reflect"
 	"strings"
 	"time"
 
+	"github.com/chewxy/math32"
 	"tinygo.org/x/drivers"
 	"tinygo.org/x/drivers/image/png"
 	"tinygo.org/x/drivers/pixel"
@@ -214,7 +214,7 @@ type DrawImageFSOptions struct {
 // Deprecated: Use Image and Image.DrawImage instead.
 func DrawImageFS(dst Displayer, fsys fs.FS, path string, x, y int) {
 	op := DrawImageFSOptions{}
-	op.GeoM.Translate(float64(x), float64(y))
+	op.GeoM.Translate(float32(x), float32(y))
 	DrawImageFSWithOptions(dst, fsys, path, op)
 }
 
@@ -273,8 +273,8 @@ func DrawImageFSWithOptions(dst Displayer, fsys fs.FS, path string, options Draw
 	for yy := 0; yy < h; yy++ {
 		for xx := 0; xx < w; xx++ {
 			if img.Get(xx, yy) == true {
-				xxf, yyf := geoM.Apply(float64(xx), float64(yy))
-				dst.SetPixel(int16(math.Round(float64(xxf))), int16(math.Round(float64(yyf))), white)
+				xxf, yyf := geoM.Apply(float32(xx), float32(yy))
+				dst.SetPixel(int16(math32.Round(xxf)), int16(math32.Round(yyf)), white)
 			}
 		}
 	}
