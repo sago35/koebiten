@@ -57,3 +57,18 @@ const (
 	Rotation180
 	Rotation270
 )
+
+// dummyGame is a type that represents a simple game function.
+type dummyGame func()
+
+func (g dummyGame) Update() error {
+	return nil
+}
+
+func (g dummyGame) Draw(*Image) {
+	g()
+}
+
+func (g dummyGame) Layout(int, int) (int, int) {
+	return 128, 64
+}

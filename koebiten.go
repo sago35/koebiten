@@ -45,17 +45,7 @@ func init() {
 
 // Run starts the main loop for the application.
 func Run(d func()) error {
-	tick := time.Tick(32 * time.Millisecond)
-	for {
-		<-tick
-		keyUpdate()
-		theInputState.update()
-		textY = 0
-		display.ClearBuffer()
-		d()
-		display.Display()
-	}
-	return nil
+	return RunGame(dummyGame(d))
 }
 
 func RunGame(game Game) error {
