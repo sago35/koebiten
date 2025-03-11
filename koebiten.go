@@ -29,7 +29,9 @@ type Displayer interface {
 var (
 	display Displayer
 
-	textY int16
+	textY           int16
+	ticks           uint32
+	enableBenchmark bool
 )
 
 var (
@@ -50,8 +52,16 @@ func Run(d func()) error {
 
 func RunGame(game Game) error {
 	tick := time.Tick(32 * time.Millisecond)
+	s := time.Now().UnixMicro()
 	for {
 		<-tick
+		ticks++
+		if enableBenchmark && (ticks%32) == 0 {
+			// print per 32 frame
+			fmt.Printf("debug: %d us / 32 frames\n", int(time.Now().UnixMicro()-s))
+			s = time.Now().UnixMicro()
+		}
+
 		keyUpdate()
 		theInputState.update()
 		textY = 0

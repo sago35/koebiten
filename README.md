@@ -61,6 +61,18 @@ If the hardware you're adding is not a simple, off-the-shelf product like zero-k
 you'll need a build tag such as `go:build zero_kb02`.
 For more details, see [#8](https://github.com/sago35/koebiten/pull/8).
 
+## Tags
+
+### koebiten\_benchmark
+
+If you specify the **`koebiten_benchmark`** tag, it will display the time taken to render **32 frames** every **32 frames** in **microseconds (us)**.
+If the processing is light enough, the displayed value should be around **1024us**. 
+If this value becomes significantly larger, it indicates that the frame rate is unstable.
+
+```
+$ tinygo flash --target ./targets/zero-kb02.json --size short --tags koebiten_benchmark ./games/flappygopher
+```
+
 ## link
 
 * https://ebitengine.org/
