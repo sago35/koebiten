@@ -270,11 +270,23 @@ func DrawImageFSWithOptions(dst Displayer, fsys fs.FS, path string, options Draw
 	}
 
 	w, h := img.Size()
-	for yy := 0; yy < h; yy++ {
-		for xx := 0; xx < w; xx++ {
-			if img.Get(xx, yy) == true {
-				xxf, yyf := geoM.Apply(float32(xx), float32(yy))
-				dst.SetPixel(int16(math32.Round(xxf)), int16(math32.Round(yyf)), white)
+	if geoM.a_1 == 0 && geoM.b == 0 && geoM.c == 0 && geoM.d_1 == 0 {
+		tx, ty := geoM.Apply(0, 0)
+		ox, oy := int(math32.Round(tx)), int(math32.Round(ty))
+		for yy := 0; yy < h; yy++ {
+			for xx := 0; xx < w; xx++ {
+				if img.Get(xx, yy) == true {
+					dst.SetPixel(int16(xx+ox), int16(yy+oy), white)
+				}
+			}
+		}
+	} else {
+		for yy := 0; yy < h; yy++ {
+			for xx := 0; xx < w; xx++ {
+				if img.Get(xx, yy) == true {
+					xxf, yyf := geoM.Apply(float32(xx), float32(yy))
+					dst.SetPixel(int16(math32.Round(xxf)), int16(math32.Round(yyf)), white)
+				}
 			}
 		}
 	}
