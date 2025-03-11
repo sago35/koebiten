@@ -145,7 +145,7 @@ func drawWalls(c *cloud) {
 	koebiten.DrawImageFS(nil, fsys, "cloud.png", c.cloudX, c.holeY-cloudHeight)
 }
 
-func walkGopher(x, y float64, frames int) {
+func walkGopher(x, y float32, frames int) {
 	img := "gopher.png"
 	if frames%2 != 0 {
 		img = "gopher_r.png"

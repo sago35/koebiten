@@ -3,8 +3,8 @@ package koebiten
 import (
 	"image/color"
 	"io/fs"
-	"math"
 
+	"github.com/chewxy/math32"
 	"tinygo.org/x/drivers/image/png"
 	"tinygo.org/x/drivers/pixel"
 )
@@ -144,8 +144,8 @@ func (i *Image) DrawImage(dst Displayer, options DrawImageOptions) {
 	for yy := 0; yy < min(h, int(dh)); yy++ {
 		for xx := 0; xx < min(w, int(dw)); xx++ {
 			if i.img.Get(xx, yy) == true {
-				xxf, yyf := geoM.Apply(float64(xx), float64(yy))
-				dst.SetPixel(int16(math.Round(float64(xxf))), int16(math.Round(float64(yyf))), white)
+				xxf, yyf := geoM.Apply(float32(xx), float32(yy))
+				dst.SetPixel(int16(math32.Round(xxf)), int16(math32.Round(yyf)), white)
 			}
 		}
 	}

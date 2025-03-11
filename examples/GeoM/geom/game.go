@@ -22,8 +22,8 @@ const (
 type Game struct {
 	gopher *koebiten.Image
 	x, y   int
-	scale  float64
-	theta  float64
+	scale  float32
+	theta  float32
 }
 
 var (
@@ -89,10 +89,10 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
 
 func (g *Game) Draw(screen *koebiten.Image) {
 	op := koebiten.DrawImageOptions{}
-	op.GeoM.Translate(-float64(gopherWidth)/2, -float64(gopherHeight)/2)
+	op.GeoM.Translate(-float32(gopherWidth)/2, -float32(gopherHeight)/2)
 	op.GeoM.Scale(g.scale, g.scale)
 	op.GeoM.Rotate(g.theta)
-	op.GeoM.Translate(float64(g.x), float64(g.y))
+	op.GeoM.Translate(float32(g.x), float32(g.y))
 	g.gopher.DrawImage(screen, op)
 }
 

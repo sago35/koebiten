@@ -16,7 +16,8 @@ package koebiten
 
 import (
 	"fmt"
-	"math"
+
+	"github.com/chewxy/math32"
 )
 
 // GeoMDim is a dimension of a GeoM.
@@ -26,12 +27,12 @@ const GeoMDim = 3
 //
 // The initial value is identity.
 type GeoM struct {
-	a_1 float64 // The actual 'a' value minus 1
-	b   float64
-	c   float64
-	d_1 float64 // The actual 'd' value minus 1
-	tx  float64
-	ty  float64
+	a_1 float32 // The actual 'a' value minus 1
+	b   float32
+	c   float32
+	d_1 float32 // The actual 'd' value minus 1
+	tx  float32
+	ty  float32
 }
 
 // String returns a string representation of GeoM.
@@ -52,7 +53,7 @@ func (g *GeoM) Reset() {
 // Apply pre-multiplies a vector (x, y, 1) by the matrix.
 // In other words, Apply calculates GeoM * (x, y, 1)^T.
 // The return value is x and y values of the result vector.
-func (g *GeoM) Apply(x, y float64) (float64, float64) {
+func (g *GeoM) Apply(x, y float32) (float32, float32) {
 	return (g.a_1+1)*x + g.b*y + g.tx, g.c*x + (g.d_1+1)*y + g.ty
 }
 
@@ -61,7 +62,7 @@ func (g *GeoM) elements32() (a, b, c, d, tx, ty float32) {
 }
 
 // Element returns a value of a matrix at (i, j).
-func (g *GeoM) Element(i, j int) float64 {
+func (g *GeoM) Element(i, j int) float32 {
 	switch {
 	case i == 0 && j == 0:
 		return g.a_1 + 1
@@ -99,7 +100,7 @@ func (g *GeoM) Concat(other GeoM) {
 }
 
 // Scale scales the matrix by (x, y).
-func (g *GeoM) Scale(x, y float64) {
+func (g *GeoM) Scale(x, y float32) {
 	a := (g.a_1 + 1) * x
 	b := g.b * x
 	tx := g.tx * x
@@ -116,19 +117,19 @@ func (g *GeoM) Scale(x, y float64) {
 }
 
 // Translate translates the matrix by (tx, ty).
-func (g *GeoM) Translate(tx, ty float64) {
+func (g *GeoM) Translate(tx, ty float32) {
 	g.tx += tx
 	g.ty += ty
 }
 
 // Rotate rotates the matrix clockwise by theta.
 // The unit is radian.
-func (g *GeoM) Rotate(theta float64) {
+func (g *GeoM) Rotate(theta float32) {
 	if theta == 0 {
 		return
 	}
 
-	sin, cos := math.Sincos(theta)
+	sin, cos := math32.Sincos(theta)
 
 	a := cos*(g.a_1+1) - sin*g.c
 	b := cos*g.b - sin*(g.d_1+1)
@@ -146,9 +147,9 @@ func (g *GeoM) Rotate(theta float64) {
 }
 
 // Skew skews the matrix by (skewX, skewY). The unit is radian.
-func (g *GeoM) Skew(skewX, skewY float64) {
-	sx := math.Tan(skewX)
-	sy := math.Tan(skewY)
+func (g *GeoM) Skew(skewX, skewY float32) {
+	sx := math32.Tan(skewX)
+	sy := math32.Tan(skewY)
 
 	a := (g.a_1 + 1) + g.c*sx
 	b := g.b + (g.d_1+1)*sx
@@ -165,7 +166,7 @@ func (g *GeoM) Skew(skewX, skewY float64) {
 	g.ty = ty
 }
 
-func (g *GeoM) det2x2() float64 {
+func (g *GeoM) det2x2() float32 {
 	return (g.a_1+1)*(g.d_1+1) - g.b*g.c
 }
 
@@ -199,7 +200,7 @@ func (g *GeoM) Invert() {
 }
 
 // SetElement sets an element at (i, j).
-func (g *GeoM) SetElement(i, j int, element float64) {
+func (g *GeoM) SetElement(i, j int, element float32) {
 	e := element
 	switch {
 	case i == 0 && j == 0:

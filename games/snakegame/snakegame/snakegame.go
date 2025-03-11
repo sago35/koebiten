@@ -131,7 +131,7 @@ func (g *Game) Update() error {
 	if next == g.food {
 		g.spawnFood()
 		g.score = len(g.snake) - 1
-		g.speed = time.Duration(float64(g.speed) * 0.95)
+		g.speed = time.Duration(float32(g.speed) * 0.95)
 	} else {
 		g.snake = g.snake[:len(g.snake)-1]
 	}
