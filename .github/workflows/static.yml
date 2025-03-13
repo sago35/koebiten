@@ -27,7 +27,7 @@ jobs:
       - name: Setup TinyGo
         uses: acifani/setup-tinygo@v2
         with:
-          tinygo-version: 'latest'
+          tinygo-version: '0.36.0'
 
       - name: Build WASM binary
         run: |
