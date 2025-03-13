@@ -10,12 +10,14 @@ import (
 
 type Game struct {
 	imageGopher *koebiten.Image
+	imageWall   *koebiten.Image
 }
 
 func NewGame() *Game {
 	game := &Game{}
 
 	game.imageGopher = koebiten.NewImageFromFS(fsys, "gopher.png")
+	game.imageWall = koebiten.NewImageFromFS(fsys, "wall.png")
 
 	for i := range wallsBuf {
 		wallsBuf[i] = &wall{}
@@ -147,7 +149,7 @@ func (game *Game) drawGame() {
 	}
 
 	for _, wall := range walls {
-		drawWalls(wall)
+		game.drawWalls(wall)
 
 		// gopherくんを表す四角形を作る
 		aLeft := int(x)
@@ -198,7 +200,7 @@ func (game *Game) drawGameover() {
 		game.imageGopher.DrawImage(nil, op)
 
 		for _, wall := range walls {
-			drawWalls(wall)
+			game.drawWalls(wall)
 		}
 	}
 
@@ -217,15 +219,19 @@ func (game *Game) drawGameover() {
 	}
 }
 
-func drawWalls(w *wall) {
+func (game *Game) drawWalls(w *wall) {
 	if w.wallX < 0-wallWidth || 128+wallWidth < w.wallX {
 		return
 	}
-	// 上の壁の描画
-	koebiten.DrawImageFS(nil, fsys, "wall.png", w.wallX, w.holeY-wallHeight)
+	// upper wall
+	op1 := koebiten.DrawImageOptions{}
+	op1.GeoM.Translate(float32(w.wallX), float32(w.holeY-wallHeight))
+	game.imageWall.DrawImage(nil, op1)
 
-	// 下の壁の描画
-	koebiten.DrawImageFS(nil, fsys, "wall.png", w.wallX, w.holeY+holeHeight)
+	// lower wall
+	op2 := koebiten.DrawImageOptions{}
+	op2.GeoM.Translate(float32(w.wallX), float32(w.holeY+holeHeight))
+	game.imageWall.DrawImage(nil, op2)
 }
 
 func hitTestRects(aLeft, aTop, aRight, aBottom, bLeft, bTop, bRight, bBottom int) bool {
