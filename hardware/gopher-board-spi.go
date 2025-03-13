@@ -22,6 +22,7 @@ type device struct {
 	gpioPins []machine.Pin
 	state    []State
 	cycle    []int
+	keybuf   [1]koebiten.Key
 }
 
 const (
@@ -103,6 +104,7 @@ func (z *device) Init() error {
 }
 
 func (z *device) KeyUpdate() error {
+	buf := z.keybuf[:]
 	for r := range z.gpioPins {
 		current := !z.gpioPins[r].Get()
 		if z.gpioPins[r] == machine.NoPin {
@@ -124,9 +126,11 @@ func (z *device) KeyUpdate() error {
 			}
 		case NoneToPress:
 			z.state[idx] = Press
-			koebiten.AppendJustPressedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendJustPressedKeys(buf)
 		case Press:
-			koebiten.AppendPressedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendPressedKeys(buf)
 			if current {
 				z.cycle[idx] = 0
 			} else {
@@ -139,7 +143,8 @@ func (z *device) KeyUpdate() error {
 			}
 		case PressToRelease:
 			z.state[idx] = None
-			koebiten.AppendJustReleasedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendJustReleasedKeys(buf)
 		}
 	}
 	return nil
