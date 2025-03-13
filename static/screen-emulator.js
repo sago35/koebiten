@@ -24,7 +24,6 @@ export default class ScreenEmulator {
 
         // DOM に追加
         this.container.appendChild(this.canvas);
-        document.body.appendChild(this.container);
     }
 
     size() {

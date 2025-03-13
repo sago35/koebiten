@@ -31,7 +31,7 @@ jobs:
 
       - name: Build WASM binary
         run: |
-          tinygo build -o ./static/main.wasm -target wasm --no-debug --panic trap ./games/all
+          tinygo build -o ./static/main.wasm -target wasm --no-debug --panic trap --tags koebiten_benchmark ./games/all
           cp $(tinygo env TINYGOROOT)/targets/wasm_exec.js ./static/
 
       - name: Setup Pages

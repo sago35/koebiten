@@ -1,6 +1,9 @@
 import ScreenEmulator from "./screen-emulator.js";
 
+const screenContainer = document.querySelector('.screen-container');
 let screen = new ScreenEmulator(128, 64, 5);
+screenContainer.appendChild(screen.canvas);
+
 let keysPressed = {}; // 押されているキーを記録
 
 async function loadWASM() {

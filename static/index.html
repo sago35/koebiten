@@ -6,7 +6,70 @@
     <title>koebietn wasm</title>
     <script src="wasm_exec.js"></script> <!-- TinyGo のランタイム -->
     <script type="module" src="main.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .screen-container {
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .description {
+            font-size: 14px;
+            color: #444;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .description table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .description th {
+            text-align: right;
+            padding-right: 10px;
+            color: #333;
+        }
+
+        .description td {
+            text-align: left;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #000;
+            image-rendering: pixelated;
+        }
+    </style>
+
 </head>
 <body>
+    <div class="screen-container">
+    </div>
+    <br>
+    <div class="description">
+        <table>
+            <tr><th>up:</th><td>ArrowUp, e, k</td></tr>
+            <tr><th>down:</th><td>ArrowDown, d, j</td></tr>
+            <tr><th>left:</th><td>ArrowLeft, s, h</td></tr>
+            <tr><th>right:</th><td>ArrowRight, f, l</td></tr>
+            <tr><th>Key0:</th><td>z, n, 0, Space, Enter</td></tr>
+            <tr><th>Key1:</th><td>x, m, 1</td></tr>
+            <tr><th>Key2:</th><td>c, ,, 2</td></tr>
+            <tr><th>Key3:</th><td>v, ., 3</td></tr>
+        </table>
+    </div>
 </body>
 </html>
