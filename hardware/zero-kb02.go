@@ -44,6 +44,7 @@ var (
 	cycle            []int
 	duration         []int
 	invertRotaryPins = false
+	keybuf           [1]koebiten.Key
 )
 
 const (
@@ -163,6 +164,7 @@ func keyUpdate() error {
 }
 
 func keyGpioUpdate() {
+	buf := keybuf[:]
 	for r := range gpioPins {
 		current := !gpioPins[r].Get()
 		idx := r + len(colPins)*len(rowPins)
@@ -181,9 +183,11 @@ func keyGpioUpdate() {
 			}
 		case NoneToPress:
 			state[idx] = Press
-			koebiten.AppendJustPressedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendJustPressedKeys(buf)
 		case Press:
-			koebiten.AppendPressedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendPressedKeys(buf)
 			if current {
 				cycle[idx] = 0
 				duration[idx]++
@@ -198,7 +202,8 @@ func keyGpioUpdate() {
 			}
 		case PressToRelease:
 			state[idx] = None
-			koebiten.AppendJustReleasedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendJustReleasedKeys(buf)
 		}
 	}
 }
@@ -214,6 +219,7 @@ func keyRotaryUpdate() {
 		encOld = newValue
 	}
 
+	buf := keybuf[:]
 	for c, current := range rot {
 		idx := c + len(colPins)*len(rowPins) + 2
 		switch state[idx] {
@@ -228,9 +234,11 @@ func keyRotaryUpdate() {
 			} else {
 				state[idx] = PressToRelease
 			}
-			koebiten.AppendJustPressedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendJustPressedKeys(buf)
 		case Press:
-			koebiten.AppendPressedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendPressedKeys(buf)
 			if current {
 			} else {
 				state[idx] = PressToRelease
@@ -241,12 +249,14 @@ func keyRotaryUpdate() {
 			} else {
 				state[idx] = None
 			}
-			koebiten.AppendJustReleasedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendJustReleasedKeys(buf)
 		}
 	}
 }
 
 func keyMatrixUpdate() {
+	buf := keybuf[:]
 	for c := range colPins {
 		for r := range rowPins {
 			colPins[c].Configure(machine.PinConfig{Mode: machine.PinOutput})
@@ -268,9 +278,11 @@ func keyMatrixUpdate() {
 				}
 			case NoneToPress:
 				state[idx] = Press
-				koebiten.AppendJustPressedKeys([]koebiten.Key{koebiten.Key(idx)})
+				buf[0] = koebiten.Key(idx)
+				koebiten.AppendJustPressedKeys(buf)
 			case Press:
-				koebiten.AppendPressedKeys([]koebiten.Key{koebiten.Key(idx)})
+				buf[0] = koebiten.Key(idx)
+				koebiten.AppendPressedKeys(buf)
 				if current {
 					cycle[idx] = 0
 					duration[idx]++
@@ -285,7 +297,8 @@ func keyMatrixUpdate() {
 				}
 			case PressToRelease:
 				state[idx] = None
-				koebiten.AppendJustReleasedKeys([]koebiten.Key{koebiten.Key(idx)})
+				buf[0] = koebiten.Key(idx)
+				koebiten.AppendJustReleasedKeys(buf)
 			}
 
 			colPins[c].Low()
@@ -295,6 +308,7 @@ func keyMatrixUpdate() {
 }
 
 func keyJoystickUpdate() {
+	buf := keybuf[:]
 	for r, p := range adcPins {
 		current := p.Get()
 		idx := r + len(colPins)*len(rowPins) + len(gpioPins) + len(rotaryPins)
@@ -313,9 +327,11 @@ func keyJoystickUpdate() {
 			}
 		case NoneToPress:
 			state[idx] = Press
-			koebiten.AppendJustPressedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendJustPressedKeys(buf)
 		case Press:
-			koebiten.AppendPressedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendPressedKeys(buf)
 			if current {
 				cycle[idx] = 0
 				duration[idx]++
@@ -330,7 +346,8 @@ func keyJoystickUpdate() {
 			}
 		case PressToRelease:
 			state[idx] = None
-			koebiten.AppendJustReleasedKeys([]koebiten.Key{koebiten.Key(idx)})
+			buf[0] = koebiten.Key(idx)
+			koebiten.AppendJustReleasedKeys(buf)
 		}
 	}
 }
