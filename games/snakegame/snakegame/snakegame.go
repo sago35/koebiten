@@ -32,6 +32,7 @@ const (
 
 type Game struct {
 	snake      []Point
+	snakeBuf   [128 / 4 * 64 / 4]Point
 	dir        Point
 	food       Point
 	alive      bool
@@ -40,6 +41,7 @@ type Game struct {
 	pendingDir Point
 	score      int
 	state      GameState
+	waitCnt    int
 }
 
 func NewGame() *Game {
@@ -49,7 +51,8 @@ func NewGame() *Game {
 }
 
 func (g *Game) Init() {
-	g.snake = []Point{{width / 2, height / 2}}
+	g.snake = g.snakeBuf[:1]
+	g.snake[0] = Point{width / 2, height / 2}
 	g.dir = Point{1, 0}
 	g.pendingDir = g.dir
 	g.spawnFood()
@@ -64,10 +67,23 @@ func (g *Game) spawnFood() {
 }
 
 func (g *Game) Update() error {
-	if g.state == StateOpening || g.state == StateGameOver {
+	if g.state == StateOpening {
 		if isAnyKeyJustPressed() {
 			g.Init()
 			g.state = StatePlaying
+			g.waitCnt = 32
+		}
+		return nil
+	}
+	if g.state == StateGameOver {
+		if g.waitCnt == 0 {
+			if isAnyKeyJustPressed() {
+				g.Init()
+				g.state = StatePlaying
+				g.waitCnt = 32
+			}
+		} else if g.waitCnt > 0 {
+			g.waitCnt--
 		}
 		return nil
 	}
@@ -127,7 +143,11 @@ func (g *Game) Update() error {
 		}
 	}
 
-	g.snake = append([]Point{next}, g.snake...)
+	g.snake = g.snakeBuf[:len(g.snake)+1]
+	for i := len(g.snake) - 1; i > 0; i-- {
+		g.snake[i] = g.snake[i-1]
+	}
+	g.snake[0] = next
 	if next == g.food {
 		g.spawnFood()
 		g.score = len(g.snake) - 1
@@ -147,7 +167,9 @@ func (g *Game) Draw(screen *koebiten.Image) {
 	if g.state == StateGameOver {
 		koebiten.Println("Game Over")
 		koebiten.Println("Score:", g.score)
-		koebiten.Println("Press Button to Restart")
+		if g.waitCnt == 0 {
+			koebiten.Println("Press Button to Restart")
+		}
 		return
 	}
 
