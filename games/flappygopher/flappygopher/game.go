@@ -9,10 +9,13 @@ import (
 )
 
 type Game struct {
+	imageGopher *koebiten.Image
 }
 
 func NewGame() *Game {
 	game := &Game{}
+
+	game.imageGopher = koebiten.NewImageFromFS(fsys, "gopher.png")
 
 	for i := range wallsBuf {
 		wallsBuf[i] = &wall{}
@@ -21,17 +24,17 @@ func NewGame() *Game {
 }
 
 // Game update process
-func (g *Game) Update() error {
+func (game *Game) Update() error {
 	return nil
 }
 
 // Screen size
-func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
+func (game *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
 	return 128, 64
 }
 
-func (g *Game) Draw(screen *koebiten.Image) {
-	draw()
+func (game *Game) Draw(screen *koebiten.Image) {
+	game.draw()
 }
 
 //go:embed *.png
@@ -73,29 +76,29 @@ var (
 	black = pixel.NewMonochrome(0x00, 0x00, 0x00)
 )
 
-func draw() {
+func (game *Game) draw() {
 	switch scene {
 	case "title":
-		drawTitle()
+		game.drawTitle()
 	case "game":
-		drawGame()
+		game.drawGame()
 	case "gameover":
-		drawGameover()
+		game.drawGameover()
 	}
 }
 
-func drawTitle() {
-	koebiten.DrawImageFS(nil, fsys, "sky.png", 0, 0)
+func (game *Game) drawTitle() {
 	koebiten.Println("click to start")
-	koebiten.DrawImageFS(nil, fsys, "gopher.png", int(x), int(y))
+	op := koebiten.DrawImageOptions{}
+	op.GeoM.Translate(float32(x), float32(y))
+	game.imageGopher.DrawImage(nil, op)
 
 	if isAnyKeyJustPressed() {
 		scene = "game"
 	}
 }
 
-func drawGame() {
-	koebiten.DrawImageFS(nil, fsys, "sky.png", 0, 0)
+func (game *Game) drawGame() {
 	for _, wall := range walls {
 		if wall.wallX == int(x) {
 			score += 1
@@ -114,7 +117,9 @@ func drawGame() {
 	}
 	vy += g // 速度に加速度を足す
 	y += vy // 位置に速度を足す
-	koebiten.DrawImageFS(nil, fsys, "gopher.png", int(x), int(y))
+	op := koebiten.DrawImageOptions{}
+	op.GeoM.Translate(float32(x), float32(y))
+	game.imageGopher.DrawImage(nil, op)
 
 	// 壁追加処理ここから
 	interval--
@@ -185,11 +190,12 @@ func drawGame() {
 	}
 }
 
-func drawGameover() {
+func (game *Game) drawGameover() {
 	if interval > 0 {
 		interval--
-		koebiten.DrawImageFS(nil, fsys, "sky.png", 0, 0)
-		koebiten.DrawImageFS(nil, fsys, "gopher.png", int(x), int(y))
+		op := koebiten.DrawImageOptions{}
+		op.GeoM.Translate(float32(x), float32(y))
+		game.imageGopher.DrawImage(nil, op)
 
 		for _, wall := range walls {
 			drawWalls(wall)
