@@ -9,6 +9,12 @@ Since then, additional features have been inspired by Miniten's foundation, Ebit
 * https://ebitengine.org/
 * https://github.com/eihigh/miniten
 
+## Demo
+
+You can try the WASM version of `koebiten` from your browser.
+
+https://sago35.github.io/koebiten/
+
 ## games/flappygopher
 
 ![](./images/flappygopher.jpg)
