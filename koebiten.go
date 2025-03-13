@@ -31,6 +31,7 @@ var (
 
 	textY           int16
 	ticks           uint32
+	tickTimes       [32]uint32
 	enableBenchmark bool
 )
 
@@ -52,15 +53,25 @@ func Run(d func()) error {
 
 func RunGame(game Game) error {
 	tick := time.Tick(32 * time.Millisecond)
-	s := time.Now().UnixMicro()
 	for {
 		<-tick
 		ticks++
 		if enableBenchmark && (ticks%32) == 0 {
 			// print per 32 frame
-			fmt.Printf("debug: %d us / 32 frames\n", int(time.Now().UnixMicro()-s))
-			s = time.Now().UnixMicro()
+			min := uint32(0xFFFFFFFF)
+			max := uint32(0x00000000)
+			for _, t := range tickTimes {
+				if t < min {
+					min = t
+				}
+				if max < t {
+					max = t
+				}
+				fmt.Printf("%02d,", t/320)
+			}
+			fmt.Printf(" %3d %% - %3d %%\n", min/320, max/320)
 		}
+		s := time.Now().UnixMicro()
 
 		keyUpdate()
 		theInputState.update()
@@ -75,6 +86,7 @@ func RunGame(game Game) error {
 		}
 		game.Draw(nil)
 		display.Display()
+		tickTimes[ticks%32] = uint32(time.Now().UnixMicro() - s)
 	}
 	return nil
 }
