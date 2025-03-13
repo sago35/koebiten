@@ -36,6 +36,14 @@ function processKeys() {
     requestAnimationFrame(processKeys); // 次のフレームもチェック
 }
 
+screen.canvas.addEventListener("touchstart", (event) => {
+    event.preventDefault();
+
+    if (window.wasmKeyEvent) {
+        window.wasmKeyEvent("0");
+    }
+});
+
 window.setPixel = (x, y, r, g, b, a) => {
     screen.setPixel(x, y, { r, g, b, a });
 };
