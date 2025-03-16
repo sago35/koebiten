@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>koebietn wasm</title>
+    <title>koebiten wasm</title>
     <script src="wasm_exec.js"></script> <!-- TinyGo のランタイム -->
     <script type="module" src="main.js"></script>
     <style>
@@ -52,6 +52,20 @@
             background-color: #000;
             image-rendering: pixelated;
         }
+
+        .key {
+            display: inline-block;
+            padding: 3px 6px;
+            margin: 2px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            background-color: #e0e0e0;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            font-family: monospace;
+        }
     </style>
 
 </head>
@@ -61,14 +75,14 @@
     <br>
     <div class="description">
         <table>
-            <tr><th>up:</th><td>ArrowUp, e, k</td></tr>
-            <tr><th>down:</th><td>ArrowDown, d, j</td></tr>
-            <tr><th>left:</th><td>ArrowLeft, s, h</td></tr>
-            <tr><th>right:</th><td>ArrowRight, f, l</td></tr>
-            <tr><th>Key0:</th><td>z, n, 0, Space, Enter, Tap</td></tr>
-            <tr><th>Key1:</th><td>x, m, 1</td></tr>
-            <tr><th>Key2:</th><td>c, ,, 2</td></tr>
-            <tr><th>Key3:</th><td>v, ., 3</td></tr>
+            <tr><th>up:</th><td><span class="key">ArrowUp</span> <span class="key">e</span> <span class="key">k</span></td></tr>
+            <tr><th>down:</th><td><span class="key">ArrowDown</span> <span class="key">d</span> <span class="key">j</span></td></tr>
+            <tr><th>left:</th><td><span class="key">ArrowLeft</span> <span class="key">s</span> <span class="key">h</span></td></tr>
+            <tr><th>right:</th><td><span class="key">ArrowRight</span> <span class="key">f</span> <span class="key">l</span></td></tr>
+            <tr><th>Key0:</th><td><span class="key">z</span> <span class="key">n</span> <span class="key">0</span> <span class="key">Space</span> <span class="key">Enter</span> <span class="key">Tap</span></td></tr>
+            <tr><th>Key1:</th><td><span class="key">x</span> <span class="key">m</span> <span class="key">1</span></td></tr>
+            <tr><th>Key2:</th><td><span class="key">c</span> <span class="key">,</span> <span class="key">2</span></td></tr>
+            <tr><th>Key3:</th><td><span class="key">v</span> <span class="key">.</span> <span class="key">3</span></td></tr>
         </table>
     </div>
 </body>
