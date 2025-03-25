@@ -11,7 +11,7 @@ Since then, additional features have been inspired by Miniten's foundation, Ebit
 
 ## Demo
 
-You can try the WASM version of `koebiten` from your browser.
+You can try the Wasm version of `koebiten` from your browser.
 
 https://sago35.github.io/koebiten/
 
@@ -58,7 +58,9 @@ The currently supported hardware is as follows.
 * macropad-rp2040
     * https://learn.adafruit.com/adafruit-macropad-rp2040
 * gopher-board
-  * https://github.com/sat0ken/gopher-board/tree/main/rp2040/v2
+    * https://github.com/sat0ken/gopher-board/tree/main/rp2040/v2
+* Wasm / WebAssembly
+    * https://sago35.github.io/koebiten
 
 ## Add new hardware
 
@@ -84,3 +86,7 @@ $ tinygo flash --target ./targets/zero-kb02.json --size short --tags koebiten_be
 * https://ebitengine.org/
 * https://github.com/eihigh/miniten
 * https://github.com/sago35/keyboards
+
+## The Go Gopher
+
+The Go gopher was designed by Renée French.
