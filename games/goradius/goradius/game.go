@@ -77,7 +77,7 @@ func (g *Game) Update() error {
 	dy := 1 * speed
 
 	// スタート画面からゲームプレイ画面に遷移
-	if koebiten.IsKeyPressed(koebiten.KeyRotaryButton) {
+	if koebiten.IsKeyPressed(koebiten.Key0) {
 		g.gameState = gameStatePlaying
 	}
 
@@ -118,14 +118,6 @@ func (g *Game) Update() error {
 		if g.y > -5 {
 			g.y -= dy
 		}
-	}
-
-	// key0を押すとデバッグ情報を表示する
-	if koebiten.IsKeyPressed(koebiten.Key0) {
-		koebiten.Println("Goradius")
-		koebiten.Println("x:", g.x, "y:", g.y)
-		koebiten.Println("beam:", g.beamEnergy)
-		koebiten.Println("Score:", g.score)
 	}
 
 	// ビームを発射する
@@ -180,14 +172,12 @@ func (g *Game) drawEnemy(e *enemy) {
 func (g *Game) drawTitle() {
 	// タイトル画面を描画する
 	koebiten.Println("Goradius")
-	koebiten.Println("Press any key to start")
+	koebiten.Println("Press key to start")
 }
 
 func (g *Game) drawGameOver() {
 	// ゲームオーバー画面を描画する
 	koebiten.Println("Game Over")
-	koebiten.Println("Score:", g.score)
-	koebiten.Println("Press any key to restart")
 }
 
 func (g *Game) drawGame(screen *koebiten.Image) {
@@ -198,6 +188,10 @@ func (g *Game) drawGame(screen *koebiten.Image) {
 	op.GeoM.Rotate(g.theta)
 	op.GeoM.Translate(float32(g.x), float32(g.y))
 	g.gopher.DrawImage(screen, op)
+
+	// スコアとエネルギー表示する
+	koebiten.Println("beam:", g.beamEnergy)
+	koebiten.Println("Score:", g.score)
 
 	// 一定間隔で敵を追加
 	frames++
