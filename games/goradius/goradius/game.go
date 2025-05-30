@@ -60,10 +60,11 @@ var (
 
 func NewGame() *Game {
 	game := &Game{
-		gopher: koebiten.NewImageFromFS(fsys, "gopher.png"),
-		x:      width / 2,
-		y:      height / 2,
-		scale:  1,
+		gopher:     koebiten.NewImageFromFS(fsys, "gopher.png"),
+		x:          width / 2,
+		y:          height / 2,
+		scale:      1,
+		beamEnergy: 1, // 初期エネルギーを1に設定
 	}
 	return game
 }
@@ -78,6 +79,8 @@ func (g *Game) Update() error {
 
 	// スタート画面からゲームプレイ画面に遷移
 	if koebiten.IsKeyPressed(koebiten.Key0) {
+		// スコアのリセット
+		g.score = 0
 		g.gameState = gameStatePlaying
 	}
 
@@ -125,21 +128,21 @@ func (g *Game) Update() error {
 		// クールダウン中はタイマーを減らす
 		g.beamCooldownTimer--
 		g.beamActive = false
-	} else if koebiten.IsKeyPressed(koebiten.Key1) {
-		// クールダウンが終わっていて、キーが押されていればビーム発射
-		g.beamEnergy++
-		if g.beamEnergy <= beamMax {
-			g.beamActive = true
-		} else {
-			// ビームエネルギーが上限に達したらクールダウン開始
-			g.beamActive = false
-			g.beamEnergy = 0
+		// クールダウンが終わったらエネルギーを1に回復
+		if g.beamCooldownTimer == 0 {
+			g.beamEnergy = 1
+		}
+	} else if koebiten.IsKeyPressed(koebiten.Key1) && g.beamEnergy > 0 {
+		// エネルギーがある場合のみビーム発射
+		g.beamActive = true
+		g.beamEnergy--
+		// エネルギーが0になったらクールダウン開始
+		if g.beamEnergy <= 0 {
 			g.beamCooldownTimer = beamCooldown
 		}
 	} else {
-		// Key1が押されていない場合はビームを無効化
+		// Key1が押されていない場合またはエネルギーがない場合はビームを無効化
 		g.beamActive = false
-		g.beamEnergy = 0
 	}
 
 	// 敵の移動
@@ -176,6 +179,8 @@ func (g *Game) drawTitle() {
 }
 
 func (g *Game) drawGameOver() {
+	// スコアを表示する
+	koebiten.Println("Score:", g.score)
 	// ゲームオーバー画面を描画する
 	koebiten.Println("Game Over")
 }
