@@ -78,10 +78,16 @@ func (g *Game) Update() error {
 	dy := 1 * speed
 
 	// スタート画面からゲームプレイ画面に遷移
-	if koebiten.IsKeyPressed(koebiten.Key0) {
+	if g.gameState != gameStatePlaying && koebiten.IsKeyJustPressed(koebiten.Key0) {
 		// スコアのリセット
 		g.score = 0
 		g.gameState = gameStatePlaying
+		g.x = width / 2
+		g.y = height / 2
+		g.scale = 1
+		g.theta = 0
+		g.beamEnergy = 1
+		enemie = enemie[:0]
 	}
 
 	// rotary buttonを回すとgopherが回転する
