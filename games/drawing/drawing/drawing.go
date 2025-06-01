@@ -16,8 +16,8 @@ type Pointer struct {
 
 type Game struct {
 	pointer Pointer
-
-	canvas *koebiten.Image
+	ticks   uint
+	canvas  *koebiten.Image
 }
 
 func NewGame() *Game {
@@ -39,6 +39,13 @@ func (g *Game) Update() error {
 	}
 	if koebiten.IsKeyPressed(koebiten.KeyArrowDown) {
 		g.pointer.y++
+	}
+
+	g.ticks++
+
+	// Do not draw in the first 10 frames to avoid malfunction in “all" game
+	if g.ticks <= 10 {
+		return nil
 	}
 
 	if isAnyKeyPressed() {
