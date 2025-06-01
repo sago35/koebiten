@@ -1,20 +1,76 @@
 package drawing
 
-import "github.com/sago35/koebiten"
+import (
+	"github.com/sago35/koebiten"
+	"tinygo.org/x/drivers/pixel"
+)
 
-type Game struct{}
+var (
+	white = pixel.NewMonochrome(0xFF, 0xFF, 0xFF)
+	black = pixel.NewMonochrome(0x00, 0x00, 0x00)
+)
+
+type Pointer struct {
+	x, y int
+}
+
+type Game struct {
+	pointer Pointer
+
+	canvas *koebiten.Image
+}
 
 func NewGame() *Game {
-	return &Game{}
+	return &Game{
+		pointer: Pointer{0, 0},
+		canvas:  koebiten.NewImage(128, 64),
+	}
 }
 
 func (g *Game) Update() error {
+	if koebiten.IsKeyPressed(koebiten.KeyArrowLeft) {
+		g.pointer.x--
+	}
+	if koebiten.IsKeyPressed(koebiten.KeyArrowRight) {
+		g.pointer.x++
+	}
+	if koebiten.IsKeyPressed(koebiten.KeyArrowUp) {
+		g.pointer.y--
+	}
+	if koebiten.IsKeyPressed(koebiten.KeyArrowDown) {
+		g.pointer.y++
+	}
+
+	if isAnyKeyPressed() {
+		g.draw(g.canvas, g.pointer.x, g.pointer.y)
+	}
+
 	return nil
 }
 
-func (g *Game) Draw(*koebiten.Image) {
+func (g *Game) Draw(screen *koebiten.Image) {
+	g.canvas.DrawImage(screen, koebiten.DrawImageOptions{})
+	koebiten.DrawFilledCircle(screen, g.pointer.x, g.pointer.y, 1, white)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return 128, 64
+}
+
+func (g *Game) draw(canvas *koebiten.Image, x, y int) {
+	koebiten.DrawFilledCircle(g.canvas, x, y, 1, white)
+}
+
+func isAnyKeyPressed() bool {
+	keys := []koebiten.Key{
+		koebiten.Key0, koebiten.Key1, koebiten.Key2, koebiten.Key3,
+		koebiten.Key4, koebiten.Key5, koebiten.Key6, koebiten.Key7,
+		koebiten.Key8, koebiten.Key9, koebiten.Key10, koebiten.Key11,
+	}
+	for _, key := range keys {
+		if koebiten.IsKeyPressed(key) {
+			return true
+		}
+	}
+	return false
 }
