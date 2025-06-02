@@ -16,13 +16,14 @@ type Pointer struct {
 
 type Game struct {
 	pointer Pointer
+	thick   int
 	ticks   uint
 	canvas  *koebiten.Image
 }
 
 func NewGame() *Game {
 	return &Game{
-		pointer: Pointer{0, 0},
+		pointer: Pointer{64, 32},
 		canvas:  koebiten.NewImage(128, 64),
 	}
 }
@@ -41,6 +42,19 @@ func (g *Game) Update() error {
 		g.pointer.y++
 	}
 
+	if koebiten.IsKeyPressed(koebiten.KeyRotaryLeft) {
+		g.thick--
+		if g.thick < 0 {
+			g.thick = 0
+		}
+	}
+	if koebiten.IsKeyPressed(koebiten.KeyRotaryRight) {
+		g.thick++
+		if g.thick > 10 {
+			g.thick = 10
+		}
+	}
+
 	g.ticks++
 
 	// Do not draw in the first 10 frames to avoid malfunction in “all" game
@@ -57,7 +71,7 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *koebiten.Image) {
 	g.canvas.DrawImage(screen, koebiten.DrawImageOptions{})
-	koebiten.DrawFilledCircle(screen, g.pointer.x, g.pointer.y, 1, white)
+	koebiten.DrawFilledCircle(screen, g.pointer.x, g.pointer.y, g.thick+1, white)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -65,7 +79,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 }
 
 func (g *Game) draw(canvas *koebiten.Image, x, y int) {
-	koebiten.DrawFilledCircle(g.canvas, x, y, 1, white)
+	koebiten.DrawFilledCircle(g.canvas, x, y, g.thick, white)
 }
 
 func isAnyKeyPressed() bool {
