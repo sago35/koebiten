@@ -5,7 +5,6 @@ import (
 
 	"github.com/sago35/koebiten"
 	"github.com/sago35/koebiten/games/blocks/blocks"
-	"github.com/sago35/koebiten/games/drawing/drawing"
 	"github.com/sago35/koebiten/games/flappygopher/flappygopher"
 	"github.com/sago35/koebiten/games/goradius/goradius"
 	"github.com/sago35/koebiten/games/jumpingopher/jumpingopher"
@@ -73,16 +72,6 @@ func NewGame() *Menu {
 			Game: func() {
 				koebiten.SetRotation(koebiten.Rotation0)
 				game := goradius.NewGame()
-				if err := koebiten.RunGame(game); err != nil {
-					log.Fatal(err)
-				}
-			},
-		},
-		{
-			Title: "Drawing",
-			Game: func() {
-				koebiten.SetRotation(koebiten.Rotation0)
-				game := drawing.NewGame()
 				if err := koebiten.RunGame(game); err != nil {
 					log.Fatal(err)
 				}
