@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/sago35/koebiten"
-	"github.com/sago35/koebiten/games/drawing/drawing"
+	"github.com/sago35/koebiten/examples/drawing/drawing"
 	"github.com/sago35/koebiten/hardware"
 )
 
