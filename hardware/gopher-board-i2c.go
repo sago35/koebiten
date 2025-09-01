@@ -54,7 +54,7 @@ func (z *device) Init() error {
 		Height:  64,
 	})
 	d.ClearDisplay()
-	Display = &d
+	Display = d
 
 	gpioPins = []machine.Pin{
 		machine.GPIO4,  // up
