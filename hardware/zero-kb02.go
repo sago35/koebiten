@@ -98,7 +98,7 @@ func Init() error {
 	})
 	d.SetRotation(drivers.Rotation180)
 	d.ClearDisplay()
-	Display = &d
+	Display = d
 
 	gpioPins = []machine.Pin{
 		machine.GPIO2, // rotary

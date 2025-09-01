@@ -48,7 +48,7 @@ func (z *device) Init() error {
 	backlight.Configure(machine.PinConfig{machine.PinOutput})
 
 	d := ili9341.NewSPI(
-		*machine.SPI3,
+		machine.SPI3,
 		machine.LCD_DC,
 		machine.LCD_SS_PIN,
 		machine.LCD_RESET,
