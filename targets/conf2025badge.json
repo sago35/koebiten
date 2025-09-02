@@ -1,0 +1,6 @@
+{
+    "inherits": [
+        "xiao-rp2040"
+    ],
+    "build-tags": ["conf2025badge"]
+}
