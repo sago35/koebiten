@@ -105,7 +105,7 @@ func (g *Game) Update() error {
 	if koebiten.IsKeyPressed(koebiten.KeyArrowLeft) && g.dir.x == 0 {
 		g.pendingDir = Point{-1, 0}
 	}
-	if koebiten.IsKeyPressed(koebiten.KeyRotaryRight) {
+	if koebiten.IsKeyJustPressed(koebiten.KeyRotaryRight) {
 		if g.dir.x == 1 {
 			g.pendingDir = Point{0, 1}
 		} else if g.dir.y == 1 {
@@ -116,7 +116,7 @@ func (g *Game) Update() error {
 			g.pendingDir = Point{1, 0}
 		}
 	}
-	if koebiten.IsKeyPressed(koebiten.KeyRotaryLeft) {
+	if koebiten.IsKeyJustPressed(koebiten.KeyRotaryLeft) {
 		if g.dir.x == 1 {
 			g.pendingDir = Point{0, -1}
 		} else if g.dir.y == 1 {
