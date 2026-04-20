@@ -59,6 +59,8 @@ The currently supported hardware is as follows.
     * https://learn.adafruit.com/adafruit-macropad-rp2040
 * gopher-board
     * https://github.com/sat0ken/gopher-board/tree/main/rp2040/v2
+* M5Stack Basic
+    * https://docs.m5stack.com/zh_CN/core/basic_v2.7
 * Wasm / WebAssembly
     * https://sago35.github.io/koebiten
 
