@@ -54,6 +54,13 @@ func (i *Image) ClearDisplay() {}
 // It implements the Displayer interface.
 func (i *Image) ClearBuffer() {}
 
+// At returns the color of the pixel at the given x and y coordinates.
+//
+// If the x and y coordinates are outside the image, panic occurs.
+func (i *Image) At(x, y int16) pixel.Monochrome {
+	return i.img.Get(int(x), int(y))
+}
+
 // NewImage creates a new Image with the given width and height.
 //
 // It returns a pointer to the new Image.
