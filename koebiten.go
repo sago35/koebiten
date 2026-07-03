@@ -142,7 +142,7 @@ func Println(args ...any) {
 	}
 
 	textY += 8
-	tinyfont.WriteLine(display, &tinyfont.Org01, 2, textY, strings.Join(str, " "), white)
+	tinyfont.WriteLine(display, &tinyfont.Org01, 2, textY, strings.Join(str, " "), black)
 }
 
 // DrawText draws text on the display.
@@ -288,7 +288,7 @@ func DrawImageFSWithOptions(dst Displayer, fsys fs.FS, path string, options Draw
 		for yy := 0; yy < h; yy++ {
 			for xx := 0; xx < w; xx++ {
 				if img.Get(xx, yy) == true {
-					dst.SetPixel(int16(xx+ox), int16(yy+oy), white)
+					dst.SetPixel(int16(xx+ox), int16(yy+oy), black)
 				}
 			}
 		}
@@ -297,7 +297,7 @@ func DrawImageFSWithOptions(dst Displayer, fsys fs.FS, path string, options Draw
 			for xx := 0; xx < w; xx++ {
 				if img.Get(xx, yy) == true {
 					xxf, yyf := geoM.Apply(float32(xx), float32(yy))
-					dst.SetPixel(int16(math32.Round(xxf)), int16(math32.Round(yyf)), white)
+					dst.SetPixel(int16(math32.Round(xxf)), int16(math32.Round(yyf)), black)
 				}
 			}
 		}
