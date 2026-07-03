@@ -79,7 +79,6 @@ func drawTitle() {
 }
 
 func drawGame() {
-	koebiten.DrawImageFS(nil, fsys, "sky.png", 0, 0)
 	koebiten.Println("Score", score)
 	koebiten.DrawImageFS(nil, fsys, "platform.png", 0, 60)
 
