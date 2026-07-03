@@ -3,7 +3,7 @@ export default class ScreenEmulator {
         this.width = width;
         this.height = height;
         this.scale = scale;
-        this.buffer = new Uint32Array(width * height); // RGBA 格納用
+        this.buffer = new Uint8Array(width * height * 4); // RGBA 格納用(Go 側から一括転送される)
 
         // 外枠用の div を作成
         this.container = document.createElement("div");
@@ -22,6 +22,13 @@ export default class ScreenEmulator {
         this.ctx.imageSmoothingEnabled = false; // ピクセルを綺麗に保つ
         this.canvas.style.display = "block";
 
+        // 等倍描画用のオフスクリーンキャンバスと ImageData は 1 回だけ生成して再利用する
+        this.offscreen = document.createElement("canvas");
+        this.offscreen.width = width;
+        this.offscreen.height = height;
+        this.offCtx = this.offscreen.getContext("2d");
+        this.imageData = this.offCtx.createImageData(width, height);
+
         // DOM に追加
         this.container.appendChild(this.canvas);
     }
@@ -30,28 +37,21 @@ export default class ScreenEmulator {
         return { x: this.width, y: this.height };
     }
 
-    setPixel(x, y, { r, g, b, a }) {
+    setPixel(x, y, r, g, b, a) {
         if (x < 0 || x >= this.width || y < 0 || y >= this.height) return;
-        const index = y * this.width + x;
-        this.buffer[index] = (a << 24) | (r << 16) | (g << 8) | b;
+        const i = (y * this.width + x) * 4;
+        this.buffer[i] = r;
+        this.buffer[i + 1] = g;
+        this.buffer[i + 2] = b;
+        this.buffer[i + 3] = a;
     }
 
     display() {
-        const imageData = this.ctx.createImageData(this.width, this.height);
-        const data = new Uint32Array(imageData.data.buffer);
+        this.imageData.data.set(this.buffer);
+        this.offCtx.putImageData(this.imageData, 0, 0);
 
-        for (let i = 0; i < this.buffer.length; i++) {
-            data[i] = this.buffer[i];
-        }
-
-        // 小さいキャンバスに描画し、拡大して表示
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = this.width;
-        tempCanvas.height = this.height;
-        const tempCtx = tempCanvas.getContext("2d");
-        tempCtx.putImageData(imageData, 0, 0);
-
+        // 小さいキャンバスに描画した内容を拡大して表示
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.drawImage(tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.drawImage(this.offscreen, 0, 0, this.canvas.width, this.canvas.height);
     }
 }

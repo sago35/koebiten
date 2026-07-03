@@ -55,14 +55,19 @@ func wasmKeyEvent() js.Func {
 
 func NewDisplay(w, h int) *Display {
 	return &Display{
-		w: int16(w),
-		h: int16(h),
+		w:   int16(w),
+		h:   int16(h),
+		buf: make([]byte, w*h*4),
 	}
 }
 
 type Display struct {
-	w int16
-	h int16
+	w   int16
+	h   int16
+	buf []byte // RGBA framebuffer, transferred to JS in one call per frame
+
+	jsBuf     js.Value // window.screenBuffer (Uint8Array)
+	jsDisplay js.Value // window.display
 }
 
 func (d *Display) Size() (x, y int16) {
@@ -70,20 +75,31 @@ func (d *Display) Size() (x, y int16) {
 }
 
 func (d *Display) SetPixel(x, y int16, c color.RGBA) {
-	js.Global().Call("setPixel", x, y, c.R, c.G, c.B, c.A)
+	if x < 0 || x >= d.w || y < 0 || y >= d.h {
+		return
+	}
+	i := (int(y)*int(d.w) + int(x)) * 4
+	d.buf[i] = c.R
+	d.buf[i+1] = c.G
+	d.buf[i+2] = c.B
+	d.buf[i+3] = c.A
 }
 
 func (d *Display) Display() error {
-	js.Global().Call("display")
+	js.CopyBytesToJS(d.jsBuf, d.buf)
+	d.jsDisplay.Invoke()
 	return nil
 }
 
 func (d *Display) ClearDisplay() {
-	js.Global().Call("clearScreen")
+	d.ClearBuffer()
+	d.Display()
 }
 
 func (d *Display) ClearBuffer() {
-	js.Global().Call("clearScreen")
+	for i := range d.buf {
+		d.buf[i] = 0
+	}
 }
 
 type WasmDevice struct {
@@ -94,6 +110,9 @@ func (w *WasmDevice) GetDisplay() koebiten.Displayer {
 }
 
 func (w *WasmDevice) Init() error {
+	g := js.Global()
+	d.jsBuf = g.Get("screenBuffer")
+	d.jsDisplay = g.Get("display")
 	return nil
 }
 

@@ -44,12 +44,31 @@ screen.canvas.addEventListener("touchstart", (event) => {
     }
 });
 
+// Go 側から js.CopyBytesToJS で 1 フレーム分を一括転送するためのバッファ
+window.screenBuffer = screen.buffer;
+
+// 旧 API との互換用（現在の Go 側からは呼ばれない）
 window.setPixel = (x, y, r, g, b, a) => {
-    screen.setPixel(x, y, { r, g, b, a });
+    screen.setPixel(x, y, r, g, b, a);
 };
+
+// URL に ?perf を付けると FPS を console に出力する
+const perfEnabled = new URLSearchParams(location.search).has("perf");
+let perfFrames = 0;
+let perfLast = performance.now();
 
 window.display = () => {
     screen.display();
+
+    if (perfEnabled) {
+        perfFrames++;
+        const now = performance.now();
+        if (now - perfLast >= 1000) {
+            console.log(`fps: ${(perfFrames * 1000 / (now - perfLast)).toFixed(1)}`);
+            perfFrames = 0;
+            perfLast = now;
+        }
+    }
 };
 
 window.clearScreen = () => {
