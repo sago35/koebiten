@@ -21,7 +21,7 @@ func (z CONF2025BADGE) Init() error {
 }
 
 func (z CONF2025BADGE) GetDisplay() koebiten.Displayer {
-	return Display
+	return whiteBGDisplay{Display}
 }
 
 func (z CONF2025BADGE) KeyUpdate() error {

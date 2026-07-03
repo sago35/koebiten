@@ -21,7 +21,7 @@ func (z ZERO_KB02) Init() error {
 }
 
 func (z ZERO_KB02) GetDisplay() koebiten.Displayer {
-	return Display
+	return whiteBGDisplay{Display}
 }
 
 func (z ZERO_KB02) KeyUpdate() error {

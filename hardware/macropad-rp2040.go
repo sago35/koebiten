@@ -13,10 +13,29 @@ var Device = &device{}
 
 type device struct {
 	display  *sh1106.Device
+	whiteBuf []byte
 	gpioPins []machine.Pin
 	state    []State
 	cycle    []int
 	keybuf   [1]koebiten.Key
+}
+
+// whiteBGDisplay wraps sh1106.Device so that clearing the buffer fills the
+// screen with white instead of black. koebiten draws ink in black on a white
+// background. sh1106 does not expose its buffer, so an all-white buffer is
+// copied in via SetBuffer.
+type whiteBGDisplay struct {
+	*sh1106.Device
+	whiteBuf []byte
+}
+
+func (d whiteBGDisplay) ClearBuffer() {
+	d.SetBuffer(d.whiteBuf)
+}
+
+func (d whiteBGDisplay) ClearDisplay() {
+	d.ClearBuffer()
+	d.Display()
 }
 
 const (
@@ -47,6 +66,11 @@ func (z *device) Init() error {
 	})
 	d.ClearDisplay()
 	z.display = &d
+
+	z.whiteBuf = make([]byte, 128*64/8)
+	for i := range z.whiteBuf {
+		z.whiteBuf[i] = 0xFF
+	}
 
 	gpioPins := []machine.Pin{
 		machine.KEY1,
@@ -96,7 +120,7 @@ func (z *device) Init() error {
 }
 
 func (z *device) GetDisplay() koebiten.Displayer {
-	return z.display
+	return whiteBGDisplay{z.display, z.whiteBuf}
 }
 
 func (z *device) KeyUpdate() error {

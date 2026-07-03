@@ -55,7 +55,7 @@ func (g *Game) Update() error {
 	}
 
 	if koebiten.IsKeyPressed(koebiten.Key0) {
-		g.draw(g.canvas, g.pointer.x, g.pointer.y, black)
+		g.draw(g.canvas, g.pointer.x, g.pointer.y, white) // eraser
 	}
 	if koebiten.IsKeyPressed(koebiten.Key1) || koebiten.IsKeyPressed(koebiten.Key2) ||
 		koebiten.IsKeyPressed(koebiten.Key3) || koebiten.IsKeyPressed(koebiten.Key4) ||
@@ -63,7 +63,7 @@ func (g *Game) Update() error {
 		koebiten.IsKeyPressed(koebiten.Key7) || koebiten.IsKeyPressed(koebiten.Key8) ||
 		koebiten.IsKeyPressed(koebiten.Key9) || koebiten.IsKeyPressed(koebiten.Key10) ||
 		koebiten.IsKeyPressed(koebiten.Key11) {
-		g.draw(g.canvas, g.pointer.x, g.pointer.y, white)
+		g.draw(g.canvas, g.pointer.x, g.pointer.y, black)
 	}
 
 	return nil
@@ -71,7 +71,7 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *koebiten.Image) {
 	g.canvas.DrawImage(screen, koebiten.DrawImageOptions{})
-	koebiten.DrawFilledCircle(screen, g.pointer.x, g.pointer.y, g.thick+1, white)
+	koebiten.DrawFilledCircle(screen, g.pointer.x, g.pointer.y, g.thick+1, black)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

@@ -175,7 +175,7 @@ func InitDisplay(dev *ili9341.Device, width, height int) *Display {
 
 	ox, oy := d.getImageTopLeftForCentering()
 	w, h := d.img.Size()
-	tinydraw.Rectangle(dev, ox-1, oy-1, int16(w)+2, int16(h)+2, white)
+	tinydraw.Rectangle(dev, ox-1, oy-1, int16(w)+2, int16(h)+2, black)
 
 	return d
 }
@@ -186,29 +186,17 @@ func (d *Display) Size() (x, y int16) {
 
 func (d *Display) SetPixel(x, y int16, c color.RGBA) {
 	mx, my := d.Size()
-	if 0 <= x && x < int16(mx) && 0 <= y && y < int16(my) {
-		d.img.Set(int(x*2+0), int(y*2+0), pixelWhite)
-		d.img.Set(int(x*2+1), int(y*2+0), pixelWhite)
-		d.img.Set(int(x*2+0), int(y*2+1), pixelWhite)
-		d.img.Set(int(x*2+1), int(y*2+1), pixelWhite)
+	if x < 0 || x >= int16(mx) || y < 0 || y >= int16(my) {
+		return
 	}
-	return
-	cnt := 0
-	if c.R < 0x80 {
-		cnt++
+	px := pixelWhite
+	if int(c.R)+int(c.G)+int(c.B) <= 128*3 {
+		px = pixelBlack
 	}
-	if c.G < 0x80 {
-		cnt++
-	}
-	if c.B < 0x80 {
-		cnt++
-	}
-	if cnt >= 2 {
-		d.img.Set(int(x), int(y), pixelWhite)
-	} else {
-		d.img.Set(int(x), int(y), pixelBlack)
-	}
-	//d.d.SetPixel(x, y, c)
+	d.img.Set(int(x*2+0), int(y*2+0), px)
+	d.img.Set(int(x*2+1), int(y*2+0), px)
+	d.img.Set(int(x*2+0), int(y*2+1), px)
+	d.img.Set(int(x*2+1), int(y*2+1), px)
 }
 
 func (d *Display) Display() error {
@@ -217,7 +205,7 @@ func (d *Display) Display() error {
 }
 
 func (d *Display) ClearBuffer() {
-	d.img.FillSolidColor(pixelBlack)
+	d.img.FillSolidColor(pixelWhite)
 }
 
 func (d *Display) ClearDisplay() {

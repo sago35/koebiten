@@ -27,7 +27,8 @@ func (i *Image) Size() (int16, int16) {
 }
 
 // SetPixel sets the pixel at the given x and y coordinates to the given color.
-// The color is converted to a pixel.Monochrome color.
+// Dark colors are stored as ink (true) and are drawn in black by DrawImage;
+// bright colors are stored as no-ink (false) and are skipped when drawing.
 // If the x and y coordinates are outside the image, the function does nothing.
 //
 // It implements the Displayer interface.
@@ -36,7 +37,7 @@ func (i *Image) SetPixel(x, y int16, c color.RGBA) {
 	if x < 0 || x >= int16(w) || y < 0 || y >= int16(h) {
 		return
 	}
-	i.img.Set(int(x), int(y), pixel.NewMonochrome(c.R, c.G, c.B))
+	i.img.Set(int(x), int(y), !pixel.NewMonochrome(c.R, c.G, c.B))
 }
 
 // Display does nothing.
@@ -121,12 +122,13 @@ func loadImageFromFS(fsys fs.FS, path string) (pixel.Image[pixel.Monochrome], er
 }
 
 // Fill fills the image with the given color.
+// Dark colors fill the image with ink (drawn in black), bright colors clear it.
 func (i *Image) Fill(clr color.Color) {
 	r, g, b, _ := clr.RGBA()
 	w, h := i.img.Size()
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
-			i.img.Set(x, y, pixel.NewMonochrome(uint8(r), uint8(g), uint8(b)))
+			i.img.Set(x, y, !pixel.NewMonochrome(uint8(r), uint8(g), uint8(b)))
 		}
 	}
 }
@@ -153,7 +155,7 @@ func (i *Image) DrawImage(dst Displayer, options DrawImageOptions) {
 		for yy := 0; yy < h; yy++ {
 			for xx := 0; xx < w; xx++ {
 				if i.img.Get(xx, yy) == true {
-					dst.SetPixel(int16(xx+ox), int16(yy+oy), white)
+					dst.SetPixel(int16(xx+ox), int16(yy+oy), black)
 				}
 			}
 		}
@@ -162,7 +164,7 @@ func (i *Image) DrawImage(dst Displayer, options DrawImageOptions) {
 			for xx := 0; xx < w; xx++ {
 				if i.img.Get(xx, yy) == true {
 					xxf, yyf := geoM.Apply(float32(xx), float32(yy))
-					dst.SetPixel(int16(math32.Round(xxf)), int16(math32.Round(yyf)), white)
+					dst.SetPixel(int16(math32.Round(xxf)), int16(math32.Round(yyf)), black)
 				}
 			}
 		}

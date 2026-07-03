@@ -98,7 +98,7 @@ func (d *Display) ClearDisplay() {
 
 func (d *Display) ClearBuffer() {
 	for i := range d.buf {
-		d.buf[i] = 0
+		d.buf[i] = 0xFF // white background
 	}
 }
 

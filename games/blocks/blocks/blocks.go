@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	backgroundColor = pixel.NewMonochrome(0x00, 0x00, 0x00)
-	frameColor      = pixel.NewMonochrome(0xFF, 0xFF, 0xFF)
+	backgroundColor = pixel.NewMonochrome(0xFF, 0xFF, 0xFF)
+	frameColor      = pixel.NewMonochrome(0x00, 0x00, 0x00)
 )
 
 const (

@@ -174,9 +174,9 @@ func (g *Game) Draw(screen *koebiten.Image) {
 	}
 
 	for _, s := range g.snake {
-		koebiten.DrawFilledRect(screen, s.x*gridSize, s.y*gridSize, gridSize, gridSize, white)
+		koebiten.DrawFilledRect(screen, s.x*gridSize, s.y*gridSize, gridSize, gridSize, black)
 	}
-	koebiten.DrawFilledRect(screen, g.food.x*gridSize, g.food.y*gridSize, gridSize, gridSize, white)
+	koebiten.DrawFilledRect(screen, g.food.x*gridSize, g.food.y*gridSize, gridSize, gridSize, black)
 	koebiten.Println("Score:", g.score)
 }
 

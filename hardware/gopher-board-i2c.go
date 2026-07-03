@@ -36,7 +36,7 @@ const (
 )
 
 func (z *device) GetDisplay() koebiten.Displayer {
-	return Display
+	return whiteBGDisplay{Display}
 }
 
 func (z *device) Init() error {
