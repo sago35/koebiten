@@ -44,6 +44,38 @@ screen.canvas.addEventListener("touchstart", (event) => {
     }
 });
 
+// (Displayed only on touch devices (forced display and for testing by appending
+// `?touch` to the URL).)
+function setupTouchControls() {
+    const forced = new URLSearchParams(location.search).has("touch");
+    const isTouch = window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
+    if (!forced && !isTouch) return;
+    document.body.classList.add("touch");
+
+    document.querySelectorAll(".pad-btn[data-key]").forEach((btn) => {
+        const key = btn.dataset.key;
+        const press = (event) => {
+            event.preventDefault();
+            // 指がボタンの外へ滑っても pointerup を受け取れるように capture する
+            if (btn.setPointerCapture && event.pointerId !== undefined) {
+                btn.setPointerCapture(event.pointerId);
+            }
+            keysPressed[key] = true;
+            btn.classList.add("pressed");
+        };
+        const release = (event) => {
+            event.preventDefault();
+            delete keysPressed[key];
+            btn.classList.remove("pressed");
+        };
+        btn.addEventListener("pointerdown", press);
+        btn.addEventListener("pointerup", release);
+        btn.addEventListener("pointercancel", release);
+        btn.addEventListener("contextmenu", (event) => event.preventDefault()); // 長押しメニューを抑止
+    });
+}
+setupTouchControls();
+
 // Go 側から js.CopyBytesToJS で 1 フレーム分を一括転送するためのバッファ
 window.screenBuffer = screen.buffer;
 
