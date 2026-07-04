@@ -444,6 +444,39 @@ func (g *Game) doRise() {
 		}
 	}
 
+	// Prevent complete floating islands. Before the rise every connected
+	// component of the board touches col 0 (an invariant maintained here and by
+	// the post-match sweep in land), so after the shift each component contains
+	// at least one cell in col 1. If the randomly generated col 0 happens to
+	// leave a component disconnected from the wall, add one connecting ball in
+	// col 0 next to a col-1 cell of that component. Without this, repeated rises
+	// with riseFillPercent < 100 can slowly grow a large fully-floating island
+	// that all falls at once when the player pops anything inside it.
+	for i := 0; i <= maxRows; i++ {
+		reach := g.reachableFromWall()
+		fixed := false
+		for r := 0; r < g.rowsInCol(1) && !fixed; r++ {
+			if g.grid[1][r] < 0 || reach[1][r] {
+				continue
+			}
+			// An unreachable col-1 cell always has an empty col-0 neighbor:
+			// if one were occupied it would be a wall anchor, making this
+			// cell reachable.
+			nb, n := g.neighbors(1, r)
+			for j := 0; j < n; j++ {
+				nc, nr := nb[j][0], nb[j][1]
+				if nc == 0 && g.grid[nc][nr] < 0 {
+					g.grid[nc][nr] = int8(rand.N(numTypes))
+					fixed = true
+					break
+				}
+			}
+		}
+		if !fixed {
+			break // all components are connected to the wall
+		}
+	}
+
 	// game over check (if a ball pushed out by the rise reaches the danger zone)
 	for c := gameOverCol; c < maxCols; c++ {
 		for r := 0; r < g.rowsInCol(c); r++ {
