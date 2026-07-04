@@ -9,52 +9,54 @@ import (
 	"tinygo.org/x/tinyfont"
 )
 
-// パズルボブルを 90 度回転させたゲーム。
-// 左の砲台から球を発射し、球は上下の壁で反射しながら右へ進む。
-// 右壁または既存の球に当たると、不可視のヘックスグリッドに吸着する。
-// 同種の球が 3 つ以上つながると消える。
+// A game like Puzzle Bobble rotated 90 degrees.
+// Balls are fired from the cannon on the left and travel right while bouncing
+// off the top and bottom walls. When a ball hits the right wall or an existing
+// ball, it snaps to an invisible hex grid.
+// When 3 or more balls of the same type connect, they pop.
 
 const (
 	screenW = 128
 	screenH = 64
 
-	maxCols     = 18 // 右壁からの列数(col 0 が最も右)
-	maxRows     = 8  // 偶数列の行数(奇数列は 7)
-	gameOverCol = 15 // この列以降に球が固定されたらゲームオーバー
+	maxCols     = 18 // number of columns from the right wall (col 0 is rightmost)
+	maxRows     = 8  // number of rows in even columns (odd columns have 7)
+	gameOverCol = 15 // game over if a ball is fixed at or past this column
 
 	numTypes = 5
 
-	colPitch = 7 // 列の x 間隔
-	rowPitch = 8 // 行の y 間隔(奇数列は +4 オフセット)
-	ballR    = 3 // 描画半径(直径 7)
+	colPitch = 7 // x spacing between columns
+	rowPitch = 8 // y spacing between rows (odd columns are offset by +4)
+	ballR    = 3 // draw radius (diameter 7)
 
 	shooterX = 8
 	shooterY = 32
-	angleMax = 72 // 発射角の上限(度)
+	angleMax = 72 // maximum firing angle (degrees)
 
-	speed = 3.0 // 球速(px/フレーム)
+	speed = 3.0 // ball speed (px/frame)
 
-	reloadFrames = 8 // 次弾装填アニメーションの長さ(フレーム数)
+	reloadFrames = 8 // length of the next-ball reload animation (frames)
 
-	cardinalFastFrames = 6 // 上下キーがこのフレーム数以上押され続けたら粗調整(±2)に切り替わる
+	cardinalFastFrames = 6 // holding up/down starts fast repeat (±2/frame) once held this many frames; before that only the initial tap (±1) moves
 
-	shakeThresholdPercent = 15 // せり上がりまでの残り時間がこの割合以下になったら固定球がプルプル震える
-	shakeUpdatePeriod     = 3  // プルプルの位相をこのフレーム数ごとにしか更新しない(控えめにするため)
+	shakeThresholdPercent = 15 // fixed balls shake when the time left until the rise drops to this percentage or below
+	shakeUpdatePeriod     = 3  // update the shake phase only once every this many frames (to keep it subtle)
 
-	allClearMessageFrames = 90 // 全消しメッセージを表示し、入力を止めておくフレーム数
+	allClearMessageFrames = 90 // frames to show the all-clear message and hold input
 )
 
-// せり上がりパラメータ。一定間隔で右から新しい球が 1 列ぶんせり出し、
-// 既存の球を左へ押し出す。せり上がるたびに間隔が riseIntervalStep ずつ
-// 短くなり(riseIntervalMin が下限)、徐々にテンポが上がっていく。
+// Rise parameters. At a fixed interval, a new column of balls pushes in from
+// the right and shoves the existing balls to the left. Each rise shortens the
+// interval by riseIntervalStep (down to a floor of riseIntervalMin), so the
+// tempo gradually speeds up.
 var (
-	riseIntervalInit = 600 // 最初のせり上がり間隔(フレーム数。32ms/フレームなので約 19.2 秒)
-	riseIntervalMin  = 180 // せり上がり間隔の下限(フレーム数。約 5.8 秒)
-	riseIntervalStep = 10  // せり上がりが起きるたびに間隔を短縮するフレーム数
-	riseFillPercent  = 60  // せり出す新しい列の各セルが埋まる確率(%)。100 未満なので列が全部埋まるとは限らない
+	riseIntervalInit = 600 // initial rise interval (frames; at 32ms/frame, about 19.2 seconds)
+	riseIntervalMin  = 180 // lower bound of the rise interval (frames; about 5.8 seconds)
+	riseIntervalStep = 10  // frames to shorten the interval by on each rise
+	riseFillPercent  = 60  // probability (%) that each cell of a new pushed-in column is filled; below 100, so a column is not always full
 )
 
-// allClearBonus は盤面を全消しした際に加算されるボーナス得点
+// allClearBonus is the bonus score added when the board is fully cleared.
 var allClearBonus = 200
 
 var (
@@ -63,41 +65,41 @@ var (
 )
 
 type Game struct {
-	grid  [maxCols][maxRows]int8 // 球の種類。-1 は空
-	angle int                    // 発射角(度)。0 で真右、負で上向き
+	grid  [maxCols][maxRows]int8 // ball type; -1 is empty
+	angle int                    // firing angle (degrees); 0 is straight right, negative is upward
 
-	cur, next int8 // 現在装填中の球と次の球
+	cur, next int8 // currently loaded ball and the next ball
 
-	reloadFrame int  // 装填アニメーションの経過フレーム。0 ならアニメーション中でない
-	reloadBall  int8 // アニメーション中に next 位置から cur 位置へ動く球の種類
+	reloadFrame int  // elapsed frames of the reload animation; 0 means not animating
+	reloadBall  int8 // type of the ball moving from the next position to the cur position during the animation
 
 	flying   bool
 	fx, fy   float32
 	fvx, fvy float32
 	ftype    int8
 
-	riseTimer    int // 次のせり上がりまでのフレーム数
-	riseInterval int // 現在のせり上がり間隔(フレーム数。徐々に短くなる)
-	pushCount    int // これまでのせり上がり(1 列押し出し)回数。列の偶奇の基準をずらすために使う
-	tick         int // プルプル演出のアニメーション位相用フレームカウンタ
+	riseTimer    int // frames until the next rise
+	riseInterval int // current rise interval (frames; gradually shortens)
+	pushCount    int // number of rises (single-column pushes) so far; used to shift the column parity baseline
+	tick         int // frame counter for the shake animation phase
 
-	allClearTimer     int // 全消しメッセージを表示中の残りフレーム数。0 なら通常状態
-	allClearBonusLeft int // ボーナス得点のうち、まだスコアに加算していない残り
+	allClearTimer     int // frames left while showing the all-clear message; 0 means normal state
+	allClearBonusLeft int // remaining bonus score not yet added to the score
 
-	// マッチ消去エフェクト(拡大するリング)
+	// match-pop effects (expanding rings)
 	pops [maxCols * maxRows]popFx
 	nPop int
-	// 孤立球の落下エフェクト
+	// falling effects for orphaned balls
 	falls [maxCols * maxRows]fallFx
 	nFall int
 
 	score     int
-	highScore int // reset() では初期化しない(電源を入れ直すまでプレイ間で保持される)
+	highScore int // not reset by reset() (kept across plays until the power is cycled)
 	scene     string
 
-	// BFS 用のワークバッファ。ローカル変数にすると 288 バイトでスタック確保上限
-	// (256 バイト)を超え、reachableFromWall/popMatches を呼ぶたびにヒープ確保
-	// が発生してしまうため、フィールドとして使い回す(--print-allocs で確認済み)。
+	// Work buffers for BFS. As local variables they are 288 bytes, which exceeds
+	// the stack allocation limit (256 bytes) and causes a heap allocation on
+	// every call to reachableFromWall/popMatches, so reuse them as fields
 	bfsStack           [maxCols * maxRows][2]int8
 	popStack, popFound [maxCols * maxRows][2]int8
 }
@@ -127,7 +129,7 @@ func (g *Game) reset() {
 		}
 	}
 	g.pushCount = 0
-	// 初期配置: 右端 4 列を埋める
+	// initial layout: fill the rightmost 4 columns
 	for c := 0; c < 4; c++ {
 		for r := 0; r < g.rowsInCol(c); r++ {
 			g.grid[c][r] = int8(rand.N(numTypes))
@@ -148,16 +150,18 @@ func (g *Game) reset() {
 	g.score = 0
 }
 
-// --- ヘックスグリッド ---
+// --- hex grid ---
 //
-// 列 c の行数・y オフセットは (pushCount + c) の偶奇で決まる(pushCount は
-// これまでのせり上がり回数)。せり上がりで列の中身を 1 列分シフトすると
-// 同時に pushCount が 1 増えるため、あるボールについて「シフト後の列番号 +
-// シフト後の pushCount」は常に元の値と偶奇が一致する(差が常に 2 になるた
-// め)。つまりボール 1 個 1 個の書式(8 行 or 7 行、オフセット)はせり上がり
-// を跨いでも変化しない。列の物理的な位置(生成された瞬間の偶奇)と結び付け
-// ず、pushCount 込みで毎回計算し直すことで、1 列ずつの押し出しでも書式の
-// 不整合(行が消える・Y 座標が飛ぶ)が起きない。
+// A column c's row count and y offset are determined by the parity of
+// (pushCount + c), where pushCount is the number of rises so far. When a rise
+// shifts a column's contents by one column, pushCount also increases by 1, so
+// for any given ball "shifted column index + shifted pushCount" always has the
+// same parity as the original value (the difference is always 2). In other
+// words, each individual ball's format (8 rows or 7 rows, and offset) does not
+// change across rises. By recomputing everything with pushCount included each
+// time, rather than tying it to a column's physical position (the parity at the
+// moment it was generated), single-column pushes never cause format
+// inconsistencies (rows disappearing or Y coordinates jumping).
 
 func (g *Game) rowsInCol(c int) int {
 	if (g.pushCount+c)%2 == 0 {
@@ -181,9 +185,9 @@ func (g *Game) validCell(c, r int) bool {
 	return 0 <= c && c < maxCols && 0 <= r && r < g.rowsInCol(c)
 }
 
-// neighbors は (c, r) に隣接するヘックスセルを返す(最大 6 個)。
-// クロージャ経由の追加はゲーム中に毎回ヒープへエスケープしてしまうため、
-// 素朴な if の並びで書く(--print-allocs で確認済み)。
+// neighbors returns the hex cells adjacent to (c, r) (up to 6).
+// Adding via a closure escapes to the heap on every call during the game, so it
+// is written as a plain sequence of ifs.
 func (g *Game) neighbors(c, r int) ([6][2]int, int) {
 	var nb [6][2]int
 	n := 0
@@ -233,7 +237,7 @@ func (g *Game) neighbors(c, r int) ([6][2]int, int) {
 	return nb, n
 }
 
-// --- 更新 ---
+// --- update ---
 
 func (g *Game) Update() error {
 	switch g.scene {
@@ -247,8 +251,8 @@ func (g *Game) Update() error {
 		g.updateGame()
 	case "gameover":
 		g.updateEffects()
-		// 球が落ち切るまではキー入力を無視する。直後にボタンを押して
-		// スコアが見えなくなるのを防ぐため。
+		// Ignore key input until the balls have finished falling. This prevents
+		// pressing a button right away and losing sight of the score.
 		if g.nFall == 0 && isFireJustPressed() {
 			g.scene = "title"
 		}
@@ -259,13 +263,15 @@ func (g *Game) Update() error {
 func (g *Game) updateGame() {
 	g.tick++
 
-	// 照準: 上下単体は押し始め(cardinalFastFrames フレーム未満)は微調整
-	// ±1、それ以上押し続けると粗調整 ±2 に切り替わる(コンコンと短く叩けば
-	// 微調整、押しっぱなしにすると速く動く)。左を同時押しした斜め(左斜め
-	// 上/左斜め下)は速度が変わらず毎フレーム ±1 の微調整。右(押した瞬間)
-	// でセンター(0°)に戻す。ロータリーは 1 ノッチ ±1 の微調整。
-	// 全消しメッセージ表示中も照準だけは変更できるようにするため、
-	// 発射・せり上がりより先に(早期 return の前に)処理する。
+	// Aim: a quick tap of up/down alone nudges the angle by exactly ±1 (only on
+	// the first frame of the press) for fine adjustment. Keep holding and, after
+	// a short dead zone (frames 2 up to cardinalFastFrames), it repeats at a
+	// coarse ±2 per frame for fast movement. So a tap fine-tunes and a hold moves
+	// quickly, with nothing in between. Diagonals with left held (upper-left/
+	// lower-left) keep a fine ±1 per frame. Right (on press) recenters to 0°.
+	// The rotary is a fine ±1 per notch.
+	// Process this before firing/rise (before the early return) so that aiming
+	// alone can still be changed while the all-clear message is showing.
 	upDur := koebiten.KeyPressDuration(koebiten.KeyUp)
 	downDur := koebiten.KeyPressDuration(koebiten.KeyDown)
 	up := upDur > 0
@@ -277,16 +283,16 @@ func (g *Game) updateGame() {
 	case down && left:
 		g.angle++
 	case up:
-		if upDur >= cardinalFastFrames {
-			g.angle -= 2
-		} else {
+		if upDur == 1 {
 			g.angle--
+		} else if upDur >= cardinalFastFrames {
+			g.angle -= 2
 		}
 	case down:
-		if downDur >= cardinalFastFrames {
-			g.angle += 2
-		} else {
+		if downDur == 1 {
 			g.angle++
+		} else if downDur >= cardinalFastFrames {
+			g.angle += 2
 		}
 	}
 	if koebiten.IsKeyJustPressed(koebiten.KeyRight) {
@@ -305,11 +311,12 @@ func (g *Game) updateGame() {
 		g.angle = angleMax
 	}
 
-	// 全消しメッセージの表示中は照準以外の入力・せり上がりを止めておき、
-	// 表示が終わったら 1 段詰めて(せり上がらせて)新しい球を供給する。
-	// ボーナス得点は一括加算ではなく、残り表示フレーム数で均等に割った分だけ
-	// (端数は前倒しで)毎フレーム加算し、最終フレームでちょうど 0 になる
-	// ようにする(スコアがカウントアップしていくように見せるため)。
+	// While the all-clear message is showing, hold all input except aiming and
+	// the rise; when it finishes, push in one column (a rise) to supply new
+	// balls. The bonus score is not added all at once: each frame adds the
+	// remaining bonus divided evenly by the remaining frames (rounding up so the
+	// remainder is front-loaded), reaching exactly 0 on the final frame (to make
+	// the score appear to count up).
 	if g.allClearTimer > 0 {
 		add := (g.allClearBonusLeft + g.allClearTimer - 1) / g.allClearTimer
 		g.score += add
@@ -323,7 +330,7 @@ func (g *Game) updateGame() {
 		return
 	}
 
-	// 発射してから固定されるまではせり上がりを止める
+	// stop the rise from occurring between firing and the ball being fixed
 	if !g.flying {
 		g.updateRise()
 	}
@@ -331,8 +338,8 @@ func (g *Game) updateGame() {
 		return
 	}
 
-	// 装填アニメーションの進行。次弾が撃てるようになるより前に必ず終わらせる
-	// (着弾が早い場合に備えて、飛翔が終わったら強制的に完了させる)。
+	// Advance the reload animation. Always finish it before the next ball can be
+	// fired (in case landing is quick, force it to complete once the flight ends).
 	if g.reloadFrame > 0 {
 		g.reloadFrame++
 		if g.reloadFrame > reloadFrames || !g.flying {
@@ -341,14 +348,15 @@ func (g *Game) updateGame() {
 		}
 	}
 
-	// 左キー単体(上下との同時押しでない)は一列詰める(せり上がりを手動で
-	// 前倒しする)。ゲームテンポを自分で速められる。飛翔中は着弾の判定と
-	// 盤面がずれてしまうため無効。
+	// Left alone (not combined with up/down) pushes in one column (manually
+	// triggering a rise early). This lets the player speed up the game tempo.
+	// Disabled while a ball is in flight, since it would misalign the landing
+	// check with the board.
 	if !g.flying && !up && !down && koebiten.IsKeyJustPressed(koebiten.KeyLeft) {
 		g.performRise()
 	}
 
-	// 発射
+	// fire
 	if !g.flying && isFireJustPressed() {
 		rad := float64(g.angle) * math.Pi / 180
 		g.fx = shooterX
@@ -358,20 +366,20 @@ func (g *Game) updateGame() {
 		g.ftype = g.cur
 		g.flying = true
 
-		// 発射直後に次弾の装填アニメーションを開始する(cur は
-		// アニメーション完了時に更新される)
+		// start the next-ball reload animation right after firing (cur is
+		// updated when the animation completes)
 		g.reloadBall = g.next
 		g.reloadFrame = 1
 		g.next = int8(rand.N(numTypes))
 	}
 
-	// 飛翔(トンネル防止のため 1px 刻みのサブステップで進める)
+	// flight (advance in 1px sub-steps to prevent tunneling)
 	if g.flying {
 		for i := 0; i < 3; i++ {
 			g.fx += g.fvx / 3
 			g.fy += g.fvy / 3
 
-			// 上下の壁で反射
+			// bounce off the top and bottom walls
 			if g.fy < ballR+1 {
 				g.fy = 2*(ballR+1) - g.fy
 				g.fvy = -g.fvy
@@ -389,7 +397,7 @@ func (g *Game) updateGame() {
 	}
 }
 
-// updateRise はタイマーを消化し、0 になったらせり上がりを実行する
+// updateRise ticks down the timer and performs a rise when it reaches 0.
 func (g *Game) updateRise() {
 	if g.riseTimer > 0 {
 		g.riseTimer--
@@ -398,12 +406,13 @@ func (g *Game) updateRise() {
 	g.performRise()
 }
 
-// performRise はせり上がりを 1 回実行し、次回に向けて間隔を短縮してタイマー
-// をリセットする。自動(タイマー満了)・手動(左キー)の両方から呼ばれる。
+// performRise executes one rise, then shortens the interval for next time and
+// resets the timer. Called from both the automatic (timer expiry) and manual
+// (left key) paths.
 func (g *Game) performRise() {
 	g.doRise()
 	if g.scene != "game" {
-		return // せり上がりでゲームオーバーになった
+		return // the rise caused a game over
 	}
 
 	g.riseInterval -= riseIntervalStep
@@ -413,21 +422,20 @@ func (g *Game) performRise() {
 	g.riseTimer = g.riseInterval
 }
 
-// doRise は右から新しい球を 1 列ぶんせり出させ、既存の球を左へ押し出す。
-// 列の中身を 1 つ隣の列インデックスへずらし、pushCount を 1 増やす。
-// rowsInCol/rowY が pushCount を織り込んで書式を決めるため、シフトされた
-// 側のボールの書式(行数・Y オフセット)は変化しない([[ヘックスグリッド]]
-// の説明を参照)。
+// doRise pushes in a new column of balls from the right and shoves the existing
+// balls to the left. It shifts each column's contents to the next column index
+// and increments pushCount by 1. Because rowsInCol/rowY factor pushCount into
+// the format, the format (row count, Y offset) of the shifted balls does not
+// change (see the "hex grid" explanation).
 func (g *Game) doRise() {
 	for c := maxCols - 1; c >= 1; c-- {
 		g.grid[c] = g.grid[c-1]
 	}
 	g.pushCount++
 
-	// 列 0 の書式(有効な行数)はせり上がりのたびに偶奇が入れ替わる。
-	// 無効な行を -1 のままにしておかないと、2 回後のせり上がりで
-	// 書式が元に戻った際に前回以前の古いデータが復活してしまうため、
-	// maxRows 全体を必ず塗り直す。
+	// Column 0's format (its valid row count) flips parity on every rise. Unless
+	// invalid rows are left as -1, old data from before could resurface when the
+	// format flips back two rises later, so always repaint the entire maxRows.
 	for r := 0; r < maxRows; r++ {
 		if r < g.rowsInCol(0) && rand.N(100) < riseFillPercent {
 			g.grid[0][r] = int8(rand.N(numTypes))
@@ -436,7 +444,7 @@ func (g *Game) doRise() {
 		}
 	}
 
-	// ゲームオーバー判定(せり出しで押し出された球が危険域に達した場合)
+	// game over check (if a ball pushed out by the rise reaches the danger zone)
 	for c := gameOverCol; c < maxCols; c++ {
 		for r := 0; r < g.rowsInCol(c); r++ {
 			if g.grid[c][r] >= 0 {
@@ -447,7 +455,7 @@ func (g *Game) doRise() {
 	}
 }
 
-// hitAt は座標 (x, y) が右壁または既存の球に接触しているかを判定する
+// hitAt reports whether the coordinate (x, y) is touching the right wall or an existing ball.
 func (g *Game) hitAt(x, y float32) bool {
 	if x >= float32(colX(0)) {
 		return true
@@ -462,7 +470,7 @@ func (g *Game) hitAt(x, y float32) bool {
 				continue
 			}
 			dy := y - float32(g.rowY(c, r))
-			if dx*dx+dy*dy < 42 { // (直径-0.5)^2 ≈ 6.5^2
+			if dx*dx+dy*dy < 42 { // (diameter-0.5)^2 ≈ 6.5^2
 				return true
 			}
 		}
@@ -470,19 +478,19 @@ func (g *Game) hitAt(x, y float32) bool {
 	return false
 }
 
-// land は飛翔中の球を最寄りの空きセルに吸着させる
+// land snaps the ball in flight to the nearest empty cell.
 func (g *Game) land() {
 	g.flying = false
 
 	bestC, bestR := -1, -1
-	bestD := float32(150) // 約 12px 以内のみ候補
+	bestD := float32(150) // only cells within about 12px are candidates
 	for c := 0; c < maxCols; c++ {
 		for r := 0; r < g.rowsInCol(c); r++ {
 			if g.grid[c][r] >= 0 {
 				continue
 			}
 			if c != 0 && !g.hasOccupiedNeighbor(c, r) {
-				continue // 右壁(col 0)か既存の球に接するセルのみ
+				continue // only cells touching the right wall (col 0) or an existing ball
 			}
 			dx := g.fx - float32(colX(c))
 			dy := g.fy - float32(g.rowY(c, r))
@@ -501,13 +509,14 @@ func (g *Game) land() {
 
 	g.grid[bestC][bestR] = g.ftype
 
-	// 消去判定はあくまで自分が撃った球によるマッチが起点(せり上がりそのもの
-	// では何も消えない)。マッチが成立したら、その時点で壁(col 0)と非連結に
-	// なっている球を全て落とす。以前は「このマッチで新たに非連結になった球」
-	// だけを対象にしていたが、それだと既にせり上がりで浮いていた塊の内部で
-	// マッチが起きても、その塊自体は元々壁と非連結なので永久に浮いたまま残っ
-	// てしまう不具合があった。マッチのたびに壁との連結を再判定することで、
-	// 浮いた球がプレイを続けても解消されずに残り続ける状況を防ぐ。
+	// Pop detection is always triggered by a match from the player's own shot
+	// (the rise itself pops nothing). Once a match occurs, drop every ball that
+	// is disconnected from the wall (col 0) at that point. Previously only balls
+	// "newly disconnected by this match" were targeted, but with that approach a
+	// match occurring inside a cluster that was already floating from a rise
+	// would leave the cluster itself floating forever, since it was disconnected
+	// from the wall to begin with. Re-checking wall connectivity on every match
+	// prevents floating balls from lingering unresolved as play continues.
 	if g.popMatches(bestC, bestR) > 0 {
 		reach := g.reachableFromWall()
 		for c := 0; c < maxCols; c++ {
@@ -521,15 +530,16 @@ func (g *Game) land() {
 		}
 	}
 
-	// 全消しでボーナス得点。スコアには即座に加算せず、メッセージを表示している
-	// 間に毎フレーム少しずつ加算していく(updateGame 側の allClearTimer 処理)。
-	// 表示が終わったら 1 段詰めて新しい球を供給する。
+	// Bonus score on a full clear. It is not added to the score immediately;
+	// instead it is added a little each frame while the message is showing
+	// (handled by the allClearTimer logic in updateGame). When the message
+	// finishes, push in one column to supply new balls.
 	if g.isBoardEmpty() {
 		g.allClearBonusLeft += allClearBonus
 		g.allClearTimer = allClearMessageFrames
 	}
 
-	// ゲームオーバー判定
+	// game over check
 	for c := gameOverCol; c < maxCols; c++ {
 		for r := 0; r < g.rowsInCol(c); r++ {
 			if g.grid[c][r] >= 0 {
@@ -540,9 +550,9 @@ func (g *Game) land() {
 	}
 }
 
-// triggerGameOver はゲームオーバーへ遷移し、盤面上の全ての球を落下エフェクト
-// に変える。球が落ち切るまでは Update() 側でキー入力を無視するため、直後に
-// ボタンを押してもスコアが見えなくなることはない。
+// triggerGameOver transitions to game over and turns every ball on the board
+// into a falling effect. Update() ignores key input until the balls finish
+// falling, so pressing a button right away won't hide the score.
 func (g *Game) triggerGameOver() {
 	g.scene = "gameover"
 	for c := 0; c < maxCols; c++ {
@@ -573,8 +583,8 @@ func (g *Game) isBoardEmpty() bool {
 	return true
 }
 
-// reachableFromWall は現在の盤面において右壁(col 0)から連結している
-// セルを BFS で求める
+// reachableFromWall computes, via BFS, the cells connected to the right wall
+// (col 0) in the current board.
 func (g *Game) reachableFromWall() [maxCols][maxRows]bool {
 	var reach [maxCols][maxRows]bool
 	stack := &g.bfsStack
@@ -613,7 +623,8 @@ func (g *Game) hasOccupiedNeighbor(c, r int) bool {
 	return false
 }
 
-// popMatches は (c, r) と同種でつながる球が 3 つ以上なら消し、消した数を返す
+// popMatches pops the group of same-type balls connected to (c, r) if it has 3
+// or more, and returns the number popped.
 func (g *Game) popMatches(c, r int) int {
 	t := g.grid[c][r]
 	var visited [maxCols][maxRows]bool
@@ -651,7 +662,7 @@ func (g *Game) popMatches(c, r int) int {
 	return fp
 }
 
-// --- エフェクト ---
+// --- effects ---
 
 func (g *Game) addPop(x, y int) {
 	if g.nPop >= len(g.pops) {
@@ -670,7 +681,7 @@ func (g *Game) addFall(x, y int, t int8) {
 }
 
 func (g *Game) updateEffects() {
-	// マッチ消去: リングを 1 フレームずつ拡大し、終わったら詰める
+	// match pop: expand the ring one frame at a time, then compact when done
 	for i := 0; i < g.nPop; {
 		g.pops[i].frame++
 		if g.pops[i].frame > 6 {
@@ -680,7 +691,7 @@ func (g *Game) updateEffects() {
 			i++
 		}
 	}
-	// 孤立球: 重力で加速しながら落下し、画面外に出たら詰める
+	// orphaned balls: fall while accelerating under gravity, then compact when off-screen
 	for i := 0; i < g.nFall; {
 		g.falls[i].vy += 0.35
 		g.falls[i].y += g.falls[i].vy
@@ -704,9 +715,9 @@ func (g *Game) drawEffects(screen *koebiten.Image) {
 	}
 }
 
-// fireKeysBuf は isFireJustPressed が毎フレーム呼ぶ AppendJustPressedKeys 用の
-// 使い回しバッファ。nil を渡すとキーが押された瞬間に毎回ヒープ確保が走るため、
-// 外部で確保済みの配列を渡して確保を避ける。
+// fireKeysBuf is a reusable buffer for the AppendJustPressedKeys call that
+// isFireJustPressed makes every frame. Passing nil would heap-allocate every
+// time a key is pressed, so pass a pre-allocated array to avoid the allocation.
 var fireKeysBuf [4]koebiten.Key
 
 func isFireJustPressed() bool {
@@ -715,7 +726,7 @@ func isFireJustPressed() bool {
 		switch k {
 		case koebiten.KeyUp, koebiten.KeyDown, koebiten.KeyLeft, koebiten.KeyRight,
 			koebiten.KeyRotaryLeft, koebiten.KeyRotaryRight:
-			// 照準操作は発射しない
+			// aiming controls do not fire
 		default:
 			return true
 		}
@@ -723,7 +734,7 @@ func isFireJustPressed() bool {
 	return false
 }
 
-// --- 描画 ---
+// --- drawing ---
 
 func (g *Game) Draw(screen *koebiten.Image) {
 	switch g.scene {
@@ -752,10 +763,10 @@ func (g *Game) drawGame(screen *koebiten.Image) {
 	g.drawEffects(screen)
 	g.drawRiseTimer(screen)
 
-	// 照準線と軌道ガイド、装填中の球
+	// aim line, trajectory guide, and the loaded ball
 	g.drawAimGuide(screen)
 	if g.reloadFrame > 0 {
-		// 装填アニメーション: next だった球が下から上へスライドしてくる
+		// reload animation: the ball that was "next" slides up from below
 		t := float32(g.reloadFrame) / float32(reloadFrames)
 		if t > 1 {
 			t = 1
@@ -766,10 +777,10 @@ func (g *Game) drawGame(screen *koebiten.Image) {
 		drawBall(screen, shooterX, shooterY, g.cur)
 	}
 
-	// 次の球
+	// next ball
 	drawBall(screen, shooterX, shooterY+20, g.next)
 
-	// 飛翔中の球
+	// ball in flight
 	if g.flying {
 		drawBall(screen, int(g.fx), int(g.fy), g.ftype)
 	}
@@ -780,27 +791,27 @@ func (g *Game) drawGame(screen *koebiten.Image) {
 	koebiten.Println(g.score)
 }
 
-// drawCenteredText は画面中央に文字列を描画する
+// drawCenteredText draws a string centered on the screen.
 func drawCenteredText(screen *koebiten.Image, s string) {
 	w, _ := tinyfont.LineWidth(&tinyfont.Org01, s)
 	x := (screenW - int(w)) / 2
 	koebiten.DrawText(screen, s, &tinyfont.Org01, int16(x), screenH/2+2, black)
 }
 
-// drawAimGuide は照準線(球から少し離す)と、反射を含む軌道ガイドの点線を描く
+// drawAimGuide draws the aim line (offset a little from the ball) and the dotted trajectory guide including bounces.
 func (g *Game) drawAimGuide(screen *koebiten.Image) {
 	rad := float64(g.angle) * math.Pi / 180
 	dx := float32(math.Cos(rad))
 	dy := float32(math.Sin(rad))
 
-	// 方向線: 装填中の球が見えるよう中心から 6px 離して描く
+	// direction line: drawn 6px away from the center so the loaded ball stays visible
 	x1 := shooterX + int(6*dx)
 	y1 := shooterY + int(6*dy)
 	x2 := shooterX + int(13*dx)
 	y2 := shooterY + int(13*dy)
 	koebiten.DrawLine(screen, x1, y1, x2, y2, black)
 
-	// 軌道ガイド: 実際の飛翔と同じ反射計算で 2px 刻みに進め、5 点ごとに点を打つ
+	// trajectory guide: advance in 2px steps using the same bounce math as actual flight, plotting a dot every 5 points
 	px := float32(shooterX)
 	py := float32(shooterY)
 	vx := dx * 2
@@ -826,7 +837,7 @@ func (g *Game) drawAimGuide(screen *koebiten.Image) {
 }
 
 func (g *Game) drawBoard(screen *koebiten.Image) {
-	// 右壁
+	// right wall
 	koebiten.DrawLine(screen, screenW-1, 0, screenW-1, screenH-1, black)
 
 	shake := g.shaking()
@@ -845,8 +856,8 @@ func (g *Game) drawBoard(screen *koebiten.Image) {
 	}
 }
 
-// shaking はせり上がりまでの残り時間が閾値以下かどうかを返す。true の間、
-// 固定された球をプルプル震わせて「もうすぐ詰める」ことを警告する。
+// shaking reports whether the time left until the rise is at or below the
+// threshold. While true, fixed balls shake to warn that a rise is imminent.
 func (g *Game) shaking() bool {
 	if g.riseInterval <= 0 {
 		return false
@@ -854,10 +865,11 @@ func (g *Game) shaking() bool {
 	return g.riseTimer*100/g.riseInterval <= shakeThresholdPercent
 }
 
-// shakeOffset はプルプル演出用の -1/0/1 の疑似乱数オフセットを返す(控えめに
-// なるよう半分以上は 0 になる)。math/rand を消費せず、seed(shakeUpdatePeriod
-// フレームごとに変化)とセル座標から毎回計算するハッシュなので、球ごとに
-// 震え方がずれて見える。
+// shakeOffset returns a pseudo-random -1/0/1 offset for the shake effect (more
+// than half the time it is 0, to keep it subtle). It does not consume
+// math/rand; it is a hash computed each time from the seed (which changes every
+// shakeUpdatePeriod frames) and the cell coordinates, so each ball appears to
+// shake out of phase with the others.
 func shakeOffset(seed, c, r int) int {
 	h := uint32(seed)*2654435761 + uint32(c)*40503 + uint32(r)*2246822519
 	switch h % 4 {
@@ -870,9 +882,10 @@ func shakeOffset(seed, c, r int) int {
 	}
 }
 
-// drawRiseTimer は次のせり上がりまでの残り時間を、画面一番左の 1 ピクセル列
-// (x=0)に縦棒で表示する。せり上がり(自動でタイマーが 0 になる、または
-// 左キーで手動発生)のたびにタイマーがリセットされ、棒は画面いっぱいに戻る。
+// drawRiseTimer shows the time left until the next rise as a vertical bar in
+// the leftmost pixel column (x=0) of the screen. On every rise (the timer
+// automatically reaching 0, or a manual trigger with the left key) the timer
+// resets and the bar returns to full height.
 func (g *Game) drawRiseTimer(screen *koebiten.Image) {
 	if g.riseInterval <= 0 {
 		return
@@ -883,27 +896,27 @@ func (g *Game) drawRiseTimer(screen *koebiten.Image) {
 	}
 }
 
-// drawBall は球の種類ごとに異なる模様で描く(モノクロのため模様で区別)
+// drawBall draws each ball type with a different pattern (patterns distinguish types since the display is monochrome).
 func drawBall(screen *koebiten.Image, x, y int, t int8) {
 	switch t {
-	case 0: // 塗りつぶし
+	case 0: // filled
 		koebiten.DrawFilledCircle(screen, x, y, ballR, black)
-	case 1: // 輪郭のみ
+	case 1: // outline only
 		koebiten.DrawCircle(screen, x, y, ballR, black)
-	case 2: // 輪郭+中央ドット
+	case 2: // outline + center dot
 		koebiten.DrawCircle(screen, x, y, ballR, black)
 		koebiten.DrawFilledRect(screen, x-1, y-1, 3, 3, black)
-	case 3: // 輪郭+縦線
+	case 3: // outline + vertical line
 		koebiten.DrawCircle(screen, x, y, ballR, black)
 		koebiten.DrawLine(screen, x, y-2, x, y+2, black)
-	case 4: // 輪郭+X
+	case 4: // outline + X
 		koebiten.DrawCircle(screen, x, y, ballR, black)
 		koebiten.DrawLine(screen, x-2, y-2, x+2, y+2, black)
 		koebiten.DrawLine(screen, x-2, y+2, x+2, y-2, black)
 	}
 }
 
-// Layout はスクリーンサイズを返す
+// Layout returns the screen size.
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
 	return screenW, screenH
 }
