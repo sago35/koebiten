@@ -16,6 +16,29 @@ var (
 	keysBuf  = [1]koebiten.Key{}
 )
 
+var allKeys = [...]koebiten.Key{
+	koebiten.Key0,
+	koebiten.Key1,
+	koebiten.Key2,
+	koebiten.Key3,
+	koebiten.Key4,
+	koebiten.Key5,
+	koebiten.Key6,
+	koebiten.Key7,
+	koebiten.Key8,
+	koebiten.Key9,
+	koebiten.Key10,
+	koebiten.Key11,
+	koebiten.KeyRotaryButton,
+	koebiten.KeyJoystick,
+	koebiten.KeyRotaryLeft,
+	koebiten.KeyRotaryRight,
+	koebiten.KeyLeft,
+	koebiten.KeyRight,
+	koebiten.KeyUp,
+	koebiten.KeyDown,
+}
+
 func init() {
 	wasmKeyEvent := wasmKeyEvent()
 	js.Global().Set("wasmKeyEvent", wasmKeyEvent)
@@ -117,30 +140,7 @@ func (w *WasmDevice) Init() error {
 }
 
 func (w *WasmDevice) KeyUpdate() error {
-	keys := []koebiten.Key{
-		koebiten.Key0,
-		koebiten.Key1,
-		koebiten.Key2,
-		koebiten.Key3,
-		koebiten.Key4,
-		koebiten.Key5,
-		koebiten.Key6,
-		koebiten.Key7,
-		koebiten.Key8,
-		koebiten.Key9,
-		koebiten.Key10,
-		koebiten.Key11,
-		koebiten.KeyRotaryButton,
-		koebiten.KeyJoystick,
-		koebiten.KeyRotaryLeft,
-		koebiten.KeyRotaryRight,
-		koebiten.KeyLeft,
-		koebiten.KeyRight,
-		koebiten.KeyUp,
-		koebiten.KeyDown,
-	}
-
-	for _, key := range keys {
+	for _, key := range allKeys {
 		keysBuf[0] = key
 		if _, ok := keyState[key]; ok {
 			koebiten.AppendPressedKeys(keysBuf[:])
