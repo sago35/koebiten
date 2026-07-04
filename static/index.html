@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>koebiten wasm</title>
 
     <meta property="og:type" content="website">
@@ -66,6 +66,14 @@
             border: 1px solid #ccc;
             background-color: #000;
             image-rendering: pixelated;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .screen-container,
+        .screen-container > div {
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .key {
@@ -103,11 +111,96 @@
             color: #999;
             margin-top: 10px;
         }
+
+        .touch-controls {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 420px;
+            box-sizing: border-box;
+            margin: 12px auto 0;
+            padding: 0 16px;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        body.touch .touch-controls {
+            display: flex;
+        }
+
+        .dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 54px);
+            grid-template-rows: repeat(3, 54px);
+            gap: 3px;
+        }
+
+        .dpad .up    { grid-area: 1 / 2; }
+        .dpad .left  { grid-area: 2 / 1; }
+        .dpad .right { grid-area: 2 / 3; }
+        .dpad .down  { grid-area: 3 / 2; }
+
+        .pad-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: monospace;
+            color: #333;
+            background-color: #e0e0e0;
+            border: 1px solid #aaa;
+            border-radius: 8px;
+            box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.25);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            cursor: pointer;
+        }
+
+        .pad-btn.pressed {
+            background-color: #b0b0b0;
+            box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.3);
+            transform: translateY(1px);
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .action-buttons .pad-btn {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            font-size: 22px;
+        }
+
+        .action-buttons .b {
+            margin-top: 40px;
+        }
     </style>
 
 </head>
 <body>
     <div class="screen-container">
+    </div>
+    <div class="touch-controls">
+        <div class="dpad">
+            <div class="pad-btn up" data-key="ArrowUp">&#9650;</div>
+            <div class="pad-btn left" data-key="ArrowLeft">&#9664;</div>
+            <div class="pad-btn right" data-key="ArrowRight">&#9654;</div>
+            <div class="pad-btn down" data-key="ArrowDown">&#9660;</div>
+        </div>
+        <div class="action-buttons">
+            <div class="pad-btn b" data-key="1">B</div>
+            <div class="pad-btn a" data-key="0">A</div>
+        </div>
     </div>
     <br>
     <div class="description">
