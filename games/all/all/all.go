@@ -7,6 +7,7 @@ import (
 	"github.com/sago35/koebiten/games/blocks/blocks"
 	"github.com/sago35/koebiten/games/flappygopher/flappygopher"
 	"github.com/sago35/koebiten/games/goradius/goradius"
+	"github.com/sago35/koebiten/games/hexbobble/hexbobble"
 	"github.com/sago35/koebiten/games/jumpingopher/jumpingopher"
 	"github.com/sago35/koebiten/games/snakegame/snakegame"
 )
@@ -72,6 +73,16 @@ func NewGame() *Menu {
 			Game: func() {
 				koebiten.SetRotation(koebiten.Rotation0)
 				game := goradius.NewGame()
+				if err := koebiten.RunGame(game); err != nil {
+					log.Fatal(err)
+				}
+			},
+		},
+		{
+			Title: "Hex Bobble",
+			Game: func() {
+				koebiten.SetRotation(koebiten.Rotation0)
+				game := hexbobble.NewGame()
 				if err := koebiten.RunGame(game); err != nil {
 					log.Fatal(err)
 				}
