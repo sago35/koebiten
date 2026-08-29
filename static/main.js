@@ -52,7 +52,12 @@ function setupTouchControls() {
     if (!forced && !isTouch) return;
     document.body.classList.add("touch");
 
-    document.querySelectorAll(".pad-btn[data-key]").forEach((btn) => {
+    // D-pad は仮想ジョイスティック: タッチした点を原点として、そこから指を
+    // ずらした方向 (8 方向、斜めは 2 キー同時) を押下として扱う。
+    // 指を動かす前は、タッチ位置のボタンをそのまま押下とみなす
+    setupDpad(document.querySelector(".dpad"));
+
+    document.querySelectorAll(".action-buttons .pad-btn[data-key]").forEach((btn) => {
         const key = btn.dataset.key;
         const press = (event) => {
             event.preventDefault();
@@ -73,6 +78,76 @@ function setupTouchControls() {
         btn.addEventListener("pointercancel", release);
         btn.addEventListener("contextmenu", (event) => event.preventDefault()); // 長押しメニューを抑止
     });
+}
+
+function setupDpad(dpad) {
+    const DEAD_ZONE = 12; // px。これ未満の移動は無視する
+    const KEYS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+    const btnFor = {};
+    dpad.querySelectorAll(".pad-btn[data-key]").forEach((btn) => {
+        btnFor[btn.dataset.key] = btn;
+    });
+
+    let pointerId = null;
+    let originX = 0, originY = 0;
+    let active = [];
+
+    const apply = (dirs) => {
+        for (const key of KEYS) {
+            const on = dirs.includes(key);
+            if (on) {
+                keysPressed[key] = true;
+            } else {
+                delete keysPressed[key];
+            }
+            btnFor[key].classList.toggle("pressed", on);
+        }
+        active = dirs;
+    };
+
+    // 原点からのずれを 8 方向に丸める (45 度刻み、斜めは 2 方向)
+    const dirsFromOffset = (dx, dy) => {
+        if (Math.hypot(dx, dy) < DEAD_ZONE) return active; // 遊びの範囲内は直前の状態を維持
+        const a = Math.atan2(-dy, dx); // 上を正にする
+        const sector = Math.round(a / (Math.PI / 4)) & 7; // 0=右, 2=上, 4=左, 6=下
+        return [
+            ["ArrowRight"],
+            ["ArrowRight", "ArrowUp"],
+            ["ArrowUp"],
+            ["ArrowUp", "ArrowLeft"],
+            ["ArrowLeft"],
+            ["ArrowLeft", "ArrowDown"],
+            ["ArrowDown"],
+            ["ArrowDown", "ArrowRight"],
+        ][sector];
+    };
+
+    dpad.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        if (pointerId !== null) return; // 2 本目以降の指は無視
+        pointerId = event.pointerId;
+        originX = event.clientX;
+        originY = event.clientY;
+        if (dpad.setPointerCapture) {
+            dpad.setPointerCapture(pointerId);
+        }
+        const btn = event.target.closest(".pad-btn[data-key]");
+        apply(btn ? [btn.dataset.key] : []);
+    });
+    dpad.addEventListener("pointermove", (event) => {
+        if (event.pointerId !== pointerId) return;
+        event.preventDefault();
+        apply(dirsFromOffset(event.clientX - originX, event.clientY - originY));
+    });
+    const release = (event) => {
+        if (event.pointerId !== pointerId) return;
+        event.preventDefault();
+        pointerId = null;
+        apply([]);
+    };
+    dpad.addEventListener("pointerup", release);
+    dpad.addEventListener("pointercancel", release);
+    dpad.addEventListener("contextmenu", (event) => event.preventDefault()); // 長押しメニューを抑止
 }
 setupTouchControls();
 
