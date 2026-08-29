@@ -15,6 +15,10 @@ You can try the Wasm version of `koebiten` from your browser.
 
 https://sago35.github.io/koebiten/
 
+To run it locally, build and serve `./static/` with `make serve` (or `make wasm`
+followed by `go run ./cmd/serve`), then open http://localhost:8000/ (append
+`?touch` to force the touch controls).
+
 ## games/flappygopher
 
 ![](./images/flappygopher.jpg)

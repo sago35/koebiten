@@ -30,9 +30,7 @@ jobs:
           tinygo-version: '0.36.0'
 
       - name: Build WASM binary
-        run: |
-          tinygo build -o ./static/main.wasm -target wasm --no-debug --panic trap --tags koebiten_benchmark ./games/all
-          cp $(tinygo env TINYGOROOT)/targets/wasm_exec.js ./static/
+        run: make wasm
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
