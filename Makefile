@@ -18,4 +18,14 @@ smoketest: FORCE
 	tinygo build -o ./out/hexbobble.zero-kb02.uf2       --size short --target ./targets/zero-kb02.json        ./games/hexbobble/
 	tinygo build -o ./out/ringflight.zero-kb02.uf2      --size short --target ./targets/zero-kb02.json        ./games/ringflight/
 
+# Wasm build for the GitHub Pages site (./static/). Also used by .github/workflows/static.yml
+wasm: FORCE
+	tinygo build -o ./static/main.wasm -target wasm --no-debug --panic trap --tags koebiten_benchmark ./games/all
+	cp $$(tinygo env TINYGOROOT)/targets/wasm_exec.js ./static/
+
+# Build wasm and serve ./static/ locally: http://localhost:8000/ (add ?touch to force touch controls)
+serve: wasm
+	go run ./cmd/serve -addr :$(PORT)
+PORT ?= 8000
+
 FORCE:

@@ -1,0 +1,4 @@
+/out/
+/static/main.wasm
+/static/wasm_exec.js
+/serve.exe
