@@ -16,5 +16,6 @@ smoketest: FORCE
 	tinygo build -o ./out/all.wasm                      --size short --target wasm --no-debug --panic trap    ./games/all/
 	tinygo build -o ./out/goradius.zero-kb02.uf2        --size short --target ./targets/zero-kb02.json        ./games/goradius/
 	tinygo build -o ./out/hexbobble.zero-kb02.uf2       --size short --target ./targets/zero-kb02.json        ./games/hexbobble/
+	tinygo build -o ./out/ringflight.zero-kb02.uf2      --size short --target ./targets/zero-kb02.json        ./games/ringflight/
 
 FORCE:
